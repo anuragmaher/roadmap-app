@@ -1,11 +1,11 @@
 {
-  "functions": {
-    "backend/api/index.js": {
-      "runtime": "@vercel/node"
-    }
-  },
-  "rewrites": [
-    { "source": "/api/(.*)", "destination": "/backend/api/index.js" },
-    { "source": "/(.*)", "destination": "/frontend/$1" }
+  "version": 2,
+  "builds": [
+    { "src": "backend/api/index.js", "use": "@vercel/node" },
+    { "src": "frontend/build/**", "use": "@vercel/static" }
+  ],
+  "routes": [
+    { "src": "/api/(.*)", "dest": "/backend/api/index.js" },
+    { "src": "/(.*)", "dest": "/frontend/build/$1" }
   ]
 }
