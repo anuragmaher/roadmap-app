@@ -28,12 +28,60 @@ const PublicRoadmap: React.FC = () => {
     }
   }, [slug, fetchRoadmap]);
 
+  // Organize items by status like the home page
+  const renderItemsSection = (title: string, items: any[], statusClass: string) => {
+    if (!items || items.length === 0) return null;
+    
+    return (
+      <div className="status-section">
+        <h3 className={`status-section-title ${statusClass}`}>{title}</h3>
+        <div className="items-half-row-grid">
+          {items.map((item: any) => (
+            <div key={item._id} className={`roadmap-item-card ${item.image ? 'has-image' : ''}`}>
+              {item.image && (
+                <img 
+                  src={item.image} 
+                  alt={item.title}
+                  className="item-image"
+                />
+              )}
+              <div className="item-header">
+                <h4>{item.title}</h4>
+                <span className={`status-badge ${item.status}`}>
+                  {item.status.replace('-', ' ')}
+                </span>
+              </div>
+              <p className="item-description">{item.description}</p>
+              <div className="item-meta">
+                <span className="quarter-info">{item.quarter}</span>
+              </div>
+              {item.tags && item.tags.length > 0 && (
+                <div className="tags">
+                  {item.tags.map((tag: string, index: number) => (
+                    <Tag key={index} variant="default">
+                      {tag}
+                    </Tag>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   if (loading) return <div className="loading">Loading...</div>;
   if (error) return <div className="error-message">{error}</div>;
   if (!roadmap) return <div className="error">Roadmap not found</div>;
 
   const items = roadmap.items || [];
   const availableQuarters = getAvailableQuarters();
+  
+  // Organize items by status
+  const completedItems = items.filter(item => item.status === 'completed');
+  const inProgressItems = items.filter(item => item.status === 'in-progress');
+  const plannedItems = items.filter(item => item.status === 'planned');
   
   // Get all unique quarters from items (including legacy format)
   const allQuartersInItems = Array.from(new Set(items.map(item => item.quarter)));
@@ -64,18 +112,32 @@ const PublicRoadmap: React.FC = () => {
   }, {} as Record<string, typeof items>);
 
   return (
-    <div className="public-roadmap">
-      <div className="roadmap-header">
+    <div className="home">
+      <div className="hero">
         <h1>{roadmap.title}</h1>
         <p>{roadmap.description}</p>
-        <div className="roadmap-meta">
+        <div className="roadmap-meta" style={{ color: 'white', opacity: 0.9, marginTop: '1rem' }}>
           <span>Created by: {roadmap.owner?.email || 'Unknown'}</span>
-          <span>Last updated: {new Date(roadmap.updatedAt).toLocaleDateString()}</span>
+          <span> • Last updated: {new Date(roadmap.updatedAt).toLocaleDateString()}</span>
         </div>
       </div>
 
-      <div className="quarter-navigation">
-        <h2>View by Quarter:</h2>
+      <div className="ai-initiatives">
+        {items.length === 0 ? (
+          <div className="hiver-roadmap-placeholder">
+            <p>No items in this roadmap yet.</p>
+          </div>
+        ) : (
+          <div className="all-initiatives">
+            {renderItemsSection('✅ Completed', completedItems, 'completed')}
+            {renderItemsSection('🚧 In Progress', inProgressItems, 'in-progress')}
+            {renderItemsSection('📋 Planned', plannedItems, 'planned')}
+          </div>
+        )}
+      </div>
+
+      <div className="quarter-navigation" style={{ marginTop: '4rem' }}>
+        <h2>View by Quarter</h2>
         <div className="quarter-links">
           {availableQuarters.map(quarter => (
             <Link 
@@ -93,82 +155,53 @@ const PublicRoadmap: React.FC = () => {
         {allQuarters.map(quarter => {
           const quarterItems = itemsByQuarter[quarter.value] || [];
           return (
-            <div key={quarter.value} className="quarter-section">
-            <div className="quarter-header">
-              <h3>{quarter.label}</h3>
-              <Link to={`/roadmap/${slug}/${quarter.value.toLowerCase()}`} className="view-quarter-btn">
-                View {quarter.label} Details
-              </Link>
-            </div>
-            
-            {quarterItems.length === 0 ? (
-              <p className="no-items">No items planned for {quarter.label}</p>
-            ) : (
-              <div className="items-preview">
-                {quarterItems.slice(0, 3).map((item) => (
-                  <div key={item._id} className="item-preview">
-                    <h4>{item.title}</h4>
-                    <span className={`status-badge ${item.status}`}>
-                      {item.status}
-                    </span>
-                    {item.tags.length > 0 && (
-                      <div className="tags">
-                        {item.tags.map((tag, index) => (
-                          <Tag key={index} variant="small">
-                            {tag}
-                          </Tag>
-                        ))}
+            <div key={quarter.value} className="status-section">
+              <div className="quarter-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                <h3 style={{ fontSize: '1.75rem', fontWeight: '700', margin: 0, color: 'var(--text-color)' }}>{quarter.label}</h3>
+                <Link to={`/roadmap/${slug}/${quarter.value.toLowerCase()}`} className="view-quarter-btn">
+                  View {quarter.label} Details
+                </Link>
+              </div>
+              
+              {quarterItems.length === 0 ? (
+                <p className="no-items">No items planned for {quarter.label}</p>
+              ) : (
+                <div className="items-half-row-grid">
+                  {quarterItems.map((item) => (
+                    <div key={item._id} className={`roadmap-item-card ${item.image ? 'has-image' : ''}`}>
+                      {item.image && (
+                        <img 
+                          src={item.image} 
+                          alt={item.title}
+                          className="item-image"
+                        />
+                      )}
+                      <div className="item-header">
+                        <h4>{item.title}</h4>
+                        <span className={`status-badge ${item.status}`}>
+                          {item.status.replace('-', ' ')}
+                        </span>
                       </div>
-                    )}
-                  </div>
-                ))}
-                {quarterItems.length > 3 && (
-                  <p className="more-items">
-                    +{quarterItems.length - 3} more items
-                  </p>
-                )}
-              </div>
-            )}
-          </div>
-          );
-        })}
-      </div>
-
-      <div className="all-items">
-        <h2>All Items</h2>
-        <div className="items-grid">
-          {items.map((item) => (
-            <div key={item._id} className="item-card">
-              <div className="item-header">
-                <h4>{item.title}</h4>
-                <div className="item-badges">
-                  <span className="quarter-badge">
-                    {(() => {
-                      try {
-                        return parseQuarterValue(item.quarter).label;
-                      } catch {
-                        return item.quarter; // Fallback to original value
-                      }
-                    })()}
-                  </span>
-                  <span className={`status-badge ${item.status}`}>
-                    {item.status}
-                  </span>
-                </div>
-              </div>
-              <p>{item.description}</p>
-              {item.tags.length > 0 && (
-                <div className="tags">
-                  {item.tags.map((tag, index) => (
-                    <Tag key={index} variant="default">
-                      {tag}
-                    </Tag>
+                      <p className="item-description">{item.description}</p>
+                      <div className="item-meta">
+                        <span className="quarter-info">{item.quarter}</span>
+                      </div>
+                      {item.tags && item.tags.length > 0 && (
+                        <div className="tags">
+                          {item.tags.map((tag, index) => (
+                            <Tag key={index} variant="default">
+                              {tag}
+                            </Tag>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   ))}
                 </div>
               )}
             </div>
-          ))}
-        </div>
+          );
+        })}
       </div>
     </div>
   );
