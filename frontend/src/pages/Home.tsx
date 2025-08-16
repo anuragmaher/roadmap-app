@@ -12,9 +12,20 @@ const Home: React.FC = () => {
     const fetchPublicRoadmaps = async () => {
       try {
         const data = await roadmapApi.getPublic();
-        setRoadmaps(data);
-      } catch (err) {
-        setError('Failed to load roadmaps');
+        console.log('API response:', data); // Debug log
+        
+        // Ensure data is an array
+        if (Array.isArray(data)) {
+          setRoadmaps(data);
+        } else {
+          console.error('API did not return an array:', data);
+          setError('Invalid response format from server');
+          setRoadmaps([]);
+        }
+      } catch (err: any) {
+        console.error('API error:', err);
+        setError(`Failed to load roadmaps: ${err.response?.data?.message || err.message || 'Unknown error'}`);
+        setRoadmaps([]);
       } finally {
         setLoading(false);
       }

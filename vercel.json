@@ -5,14 +5,17 @@
       "runtime": "nodejs18.x"
     }
   },
-  "rewrites": [
+  "env": {
+    "REACT_APP_API_URL": "/api"
+  },
+  "routes": [
     {
-      "source": "/api/(.*)",
-      "destination": "/backend/src/server.js"
+      "src": "/api/(.*)",
+      "dest": "/backend/src/server.js"
     },
     {
-      "source": "/((?!api).*)",
-      "destination": "/index.html"
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
   ]
 }
