@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { roadmapApi, itemApi } from '../services/api';
 import { Roadmap, Item } from '../types';
+import { getAvailableQuarters, getQuarterOptions, itemBelongsToQuarter } from '../utils/quarters';
 
 const RoadmapEditor: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -14,7 +15,7 @@ const RoadmapEditor: React.FC = () => {
   const [newItem, setNewItem] = useState({
     title: '',
     description: '',
-    quarter: 'Q1' as 'Q1' | 'Q2' | 'Q3' | 'Q4',
+    quarter: getQuarterOptions()[1]?.value || '2025-Q3', // Default to current quarter
     tags: [] as string[],
     status: 'planned' as 'planned' | 'in-progress' | 'completed' | 'cancelled',
     order: 0
@@ -50,14 +51,16 @@ const RoadmapEditor: React.FC = () => {
       setNewItem({
         title: '',
         description: '',
-        quarter: 'Q1',
+        quarter: getQuarterOptions()[1]?.value || '2025-Q3',
         tags: [],
         status: 'planned',
         order: 0
       });
       setShowItemForm(false);
-    } catch (err) {
-      setError('Failed to create item');
+    } catch (err: any) {
+      console.error('Create item error:', err);
+      const errorMessage = err.response?.data?.details || err.response?.data?.message || 'Failed to create item';
+      setError(errorMessage);
     }
   };
 
@@ -72,14 +75,16 @@ const RoadmapEditor: React.FC = () => {
       setNewItem({
         title: '',
         description: '',
-        quarter: 'Q1',
+        quarter: getQuarterOptions()[1]?.value || '2025-Q3',
         tags: [],
         status: 'planned',
         order: 0
       });
       setShowItemForm(false);
-    } catch (err) {
-      setError('Failed to update item');
+    } catch (err: any) {
+      console.error('Update item error:', err);
+      const errorMessage = err.response?.data?.details || err.response?.data?.message || 'Failed to update item';
+      setError(errorMessage);
     }
   };
 
@@ -88,8 +93,10 @@ const RoadmapEditor: React.FC = () => {
       try {
         await itemApi.delete(itemId);
         setItems(items.filter(item => item._id !== itemId));
-      } catch (err) {
-        setError('Failed to delete item');
+      } catch (err: any) {
+        console.error('Delete item error:', err);
+        const errorMessage = err.response?.data?.details || err.response?.data?.message || 'Failed to delete item';
+        setError(errorMessage);
       }
     }
   };
@@ -115,12 +122,12 @@ const RoadmapEditor: React.FC = () => {
   if (loading) return <div className="loading">Loading...</div>;
   if (!roadmap) return <div className="error">Roadmap not found</div>;
 
-  const itemsByQuarter = {
-    Q1: items.filter(item => item.quarter === 'Q1'),
-    Q2: items.filter(item => item.quarter === 'Q2'),
-    Q3: items.filter(item => item.quarter === 'Q3'),
-    Q4: items.filter(item => item.quarter === 'Q4')
-  };
+  // Group items by available quarters (including legacy quarters)
+  const availableQuarters = getAvailableQuarters();
+  const itemsByQuarter = availableQuarters.reduce((acc, quarter) => {
+    acc[quarter.value] = items.filter(item => itemBelongsToQuarter(item.quarter, quarter.value));
+    return acc;
+  }, {} as Record<string, Item[]>);
 
   return (
     <div className="roadmap-editor">
@@ -165,12 +172,13 @@ const RoadmapEditor: React.FC = () => {
                   <select
                     id="quarter"
                     value={newItem.quarter}
-                    onChange={(e) => setNewItem({...newItem, quarter: e.target.value as any})}
+                    onChange={(e) => setNewItem({...newItem, quarter: e.target.value})}
                   >
-                    <option value="Q1">Q1</option>
-                    <option value="Q2">Q2</option>
-                    <option value="Q3">Q3</option>
-                    <option value="Q4">Q4</option>
+                    {getQuarterOptions().map(option => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
                   </select>
                 </div>
                 <div className="form-group">
@@ -208,7 +216,7 @@ const RoadmapEditor: React.FC = () => {
                     setNewItem({
                       title: '',
                       description: '',
-                      quarter: 'Q1',
+                      quarter: getQuarterOptions()[1]?.value || '2025-Q3',
                       tags: [],
                       status: 'planned',
                       order: 0
@@ -225,9 +233,11 @@ const RoadmapEditor: React.FC = () => {
       )}
 
       <div className="quarters-grid">
-        {Object.entries(itemsByQuarter).map(([quarter, quarterItems]) => (
-          <div key={quarter} className="quarter-column">
-            <h2>{quarter}</h2>
+        {availableQuarters.map((quarter) => {
+          const quarterItems = itemsByQuarter[quarter.value] || [];
+          return (
+            <div key={quarter.value} className="quarter-column">
+              <h2>{quarter.label}</h2>
             <div className="items-list">
               {quarterItems.map((item) => (
                 <div key={item._id} className="item-card">
@@ -263,7 +273,8 @@ const RoadmapEditor: React.FC = () => {
               ))}
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

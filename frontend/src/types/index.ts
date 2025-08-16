@@ -24,7 +24,7 @@ export interface Item {
   _id: string;
   title: string;
   description: string;
-  quarter: 'Q1' | 'Q2' | 'Q3' | 'Q4';
+  quarter: string; // Format: "YYYY-QN" (e.g., "2025-Q1")
   tags: string[];
   status: 'planned' | 'in-progress' | 'completed' | 'cancelled';
   roadmap: string;

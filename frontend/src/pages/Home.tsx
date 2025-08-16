@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { roadmapApi } from '../services/api';
 import { Roadmap } from '../types';
+import { getAvailableQuarters } from '../utils/quarters';
 
 const Home: React.FC = () => {
   const [roadmaps, setRoadmaps] = useState<Roadmap[]>([]);
@@ -59,10 +60,14 @@ const Home: React.FC = () => {
                 <div className="roadmap-meta">
                   <span>By: {roadmap.owner?.email || 'Unknown'}</span>
                   <div className="quarter-links">
-                    <Link to={`/roadmap/${roadmap.slug}/q1`}>Q1</Link>
-                    <Link to={`/roadmap/${roadmap.slug}/q2`}>Q2</Link>
-                    <Link to={`/roadmap/${roadmap.slug}/q3`}>Q3</Link>
-                    <Link to={`/roadmap/${roadmap.slug}/q4`}>Q4</Link>
+                    {getAvailableQuarters().map(quarter => (
+                      <Link 
+                        key={quarter.value}
+                        to={`/roadmap/${roadmap.slug}/${quarter.value.toLowerCase()}`}
+                      >
+                        {quarter.label}
+                      </Link>
+                    ))}
                   </div>
                 </div>
                 <Link to={`/roadmap/${roadmap.slug}`} className="view-btn">

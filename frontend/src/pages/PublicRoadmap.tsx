@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { roadmapApi } from '../services/api';
 import { Roadmap } from '../types';
+import { getAvailableQuarters, parseQuarterValue, itemBelongsToQuarter } from '../utils/quarters';
 
 const PublicRoadmap: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -31,12 +32,35 @@ const PublicRoadmap: React.FC = () => {
   if (!roadmap) return <div className="error">Roadmap not found</div>;
 
   const items = roadmap.items || [];
-  const itemsByQuarter = {
-    Q1: items.filter(item => item.quarter === 'Q1'),
-    Q2: items.filter(item => item.quarter === 'Q2'),
-    Q3: items.filter(item => item.quarter === 'Q3'),
-    Q4: items.filter(item => item.quarter === 'Q4')
-  };
+  const availableQuarters = getAvailableQuarters();
+  
+  // Get all unique quarters from items (including legacy format)
+  const allQuartersInItems = Array.from(new Set(items.map(item => item.quarter)));
+  
+  // Create a combined list of quarters: available quarters + any legacy quarters
+  const allQuarters = [...availableQuarters];
+  allQuartersInItems.forEach(itemQuarter => {
+    // If it's a legacy quarter not already covered, add it
+    if (!availableQuarters.some(q => itemBelongsToQuarter(itemQuarter, q.value))) {
+      try {
+        const parsed = parseQuarterValue(itemQuarter);
+        allQuarters.push(parsed);
+      } catch {
+        // If we can't parse it, create a simple display
+        allQuarters.push({
+          year: new Date().getFullYear(),
+          quarter: 0,
+          label: itemQuarter,
+          value: itemQuarter
+        });
+      }
+    }
+  });
+  
+  const itemsByQuarter = allQuarters.reduce((acc, quarter) => {
+    acc[quarter.value] = items.filter(item => itemBelongsToQuarter(item.quarter, quarter.value));
+    return acc;
+  }, {} as Record<string, typeof items>);
 
   return (
     <div className="public-roadmap">
@@ -52,25 +76,32 @@ const PublicRoadmap: React.FC = () => {
       <div className="quarter-navigation">
         <h2>View by Quarter:</h2>
         <div className="quarter-links">
-          <Link to={`/roadmap/${slug}/q1`} className="quarter-link">Q1</Link>
-          <Link to={`/roadmap/${slug}/q2`} className="quarter-link">Q2</Link>
-          <Link to={`/roadmap/${slug}/q3`} className="quarter-link">Q3</Link>
-          <Link to={`/roadmap/${slug}/q4`} className="quarter-link">Q4</Link>
+          {availableQuarters.map(quarter => (
+            <Link 
+              key={quarter.value}
+              to={`/roadmap/${slug}/${quarter.value.toLowerCase()}`} 
+              className="quarter-link"
+            >
+              {quarter.label}
+            </Link>
+          ))}
         </div>
       </div>
 
       <div className="quarters-overview">
-        {Object.entries(itemsByQuarter).map(([quarter, quarterItems]) => (
-          <div key={quarter} className="quarter-section">
+        {allQuarters.map(quarter => {
+          const quarterItems = itemsByQuarter[quarter.value] || [];
+          return (
+            <div key={quarter.value} className="quarter-section">
             <div className="quarter-header">
-              <h3>{quarter}</h3>
-              <Link to={`/roadmap/${slug}/${quarter.toLowerCase()}`} className="view-quarter-btn">
-                View {quarter} Details
+              <h3>{quarter.label}</h3>
+              <Link to={`/roadmap/${slug}/${quarter.value.toLowerCase()}`} className="view-quarter-btn">
+                View {quarter.label} Details
               </Link>
             </div>
             
             {quarterItems.length === 0 ? (
-              <p className="no-items">No items planned for {quarter}</p>
+              <p className="no-items">No items planned for {quarter.label}</p>
             ) : (
               <div className="items-preview">
                 {quarterItems.slice(0, 3).map((item) => (
@@ -96,7 +127,8 @@ const PublicRoadmap: React.FC = () => {
               </div>
             )}
           </div>
-        ))}
+          );
+        })}
       </div>
 
       <div className="all-items">
@@ -107,7 +139,15 @@ const PublicRoadmap: React.FC = () => {
               <div className="item-header">
                 <h4>{item.title}</h4>
                 <div className="item-badges">
-                  <span className="quarter-badge">{item.quarter}</span>
+                  <span className="quarter-badge">
+                    {(() => {
+                      try {
+                        return parseQuarterValue(item.quarter).label;
+                      } catch {
+                        return item.quarter; // Fallback to original value
+                      }
+                    })()}
+                  </span>
                   <span className={`status-badge ${item.status}`}>
                     {item.status}
                   </span>

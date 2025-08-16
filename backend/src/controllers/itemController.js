@@ -33,8 +33,15 @@ const createItem = async (req, res) => {
     await item.save();
     res.status(201).json(item);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
+    console.error('Create item error:', error);
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({ 
+        message: 'Validation error', 
+        details: error.message,
+        errors: Object.values(error.errors).map(e => e.message)
+      });
+    }
+    res.status(500).json({ message: 'Server error', details: error.message });
   }
 };
 

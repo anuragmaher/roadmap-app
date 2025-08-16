@@ -12,8 +12,14 @@ const itemSchema = new mongoose.Schema({
   },
   quarter: {
     type: String,
-    enum: ['Q1', 'Q2', 'Q3', 'Q4'],
-    required: true
+    required: true,
+    validate: {
+      validator: function(v) {
+        // Validate format: YYYY-QN (e.g., "2025-Q1")
+        return /^\d{4}-Q[1-4]$/.test(v);
+      },
+      message: 'Quarter must be in format YYYY-QN (e.g., "2025-Q1")'
+    }
   },
   tags: [{
     type: String,

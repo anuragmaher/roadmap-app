@@ -26,7 +26,7 @@ router.get('/roadmap/:roadmapId', getItems);
 router.post('/roadmap/:roadmapId', auth, [
   body('title').trim().isLength({ min: 1 }).withMessage('Title is required'),
   body('description').optional().trim(),
-  body('quarter').isIn(['Q1', 'Q2', 'Q3', 'Q4']).withMessage('Quarter must be Q1, Q2, Q3, or Q4'),
+  body('quarter').matches(/^\d{4}-Q[1-4]$|^Q[1-4]$/).withMessage('Quarter must be in format YYYY-QN (e.g., "2025-Q1") or legacy format (e.g., "Q1")'),
   body('tags').optional().isArray(),
   body('status').optional().isIn(['planned', 'in-progress', 'completed', 'cancelled']),
   body('order').optional().isNumeric()
@@ -35,7 +35,7 @@ router.post('/roadmap/:roadmapId', auth, [
 router.put('/:itemId', auth, [
   body('title').optional().trim().isLength({ min: 1 }),
   body('description').optional().trim(),
-  body('quarter').optional().isIn(['Q1', 'Q2', 'Q3', 'Q4']),
+  body('quarter').optional().matches(/^\d{4}-Q[1-4]$|^Q[1-4]$/),
   body('tags').optional().isArray(),
   body('status').optional().isIn(['planned', 'in-progress', 'completed', 'cancelled']),
   body('order').optional().isNumeric()
