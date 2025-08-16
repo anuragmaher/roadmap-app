@@ -32,6 +32,22 @@
         <feMergeNode in="SourceGraphic"/>
       </feMerge>
     </filter>
+    
+    <linearGradient id="beeBodyGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fbbf24" />
+      <stop offset="50%" style="stop-color:#f59e0b" />
+      <stop offset="100%" style="stop-color:#d97706" />
+    </linearGradient>
+    
+    <linearGradient id="beeWingGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#e5e7eb;stop-opacity:0.6" />
+    </linearGradient>
+    
+    <linearGradient id="beeStripeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1f2937" />
+      <stop offset="100%" style="stop-color:#374151" />
+    </linearGradient>
   </defs>
   
   <!-- Background with rounded corners -->
@@ -174,6 +190,135 @@
       <line x1="250" y1="130" x2="300" y2="90" />
       <line x1="500" y1="120" x2="550" y2="150" />
       <line x1="550" y1="150" x2="600" y2="110" />
+    </g>
+  </g>
+  
+  <!-- Flying AI Bees -->
+  <!-- Bee 1: Flying around the AI brain -->
+  <g opacity="0.9">
+    <g transform="translate(0, 0)">
+      <animateTransform 
+        attributeName="transform" 
+        type="translate" 
+        values="200,120; 230,110; 250,130; 220,140; 200,120" 
+        dur="4s" 
+        repeatCount="indefinite" />
+      
+      <!-- Bee body -->
+      <ellipse cx="0" cy="0" rx="20" ry="12" fill="url(#beeBodyGradient)" filter="url(#glow)" />
+      
+      <!-- Bee stripes -->
+      <ellipse cx="-5" cy="0" rx="3" ry="10" fill="url(#beeStripeGradient)" />
+      <ellipse cx="5" cy="0" rx="3" ry="10" fill="url(#beeStripeGradient)" />
+      
+      <!-- Bee wings -->
+      <g opacity="0.7">
+        <ellipse cx="-15" cy="-8" rx="10" ry="6" fill="url(#beeWingGradient)" transform="rotate(-20)">
+          <animateTransform attributeName="transform" type="rotate" values="-20; -30; -20" dur="0.3s" repeatCount="indefinite" />
+        </ellipse>
+        <ellipse cx="15" cy="-8" rx="10" ry="6" fill="url(#beeWingGradient)" transform="rotate(20)">
+          <animateTransform attributeName="transform" type="rotate" values="20; 30; 20" dur="0.3s" repeatCount="indefinite" />
+        </ellipse>
+      </g>
+      
+      <!-- AI circuit on bee -->
+      <circle cx="0" cy="0" r="4" fill="url(#aiGradient)" opacity="0.8" />
+    </g>
+  </g>
+  
+  <!-- Bee 2: Flying around the roadmap -->
+  <g opacity="0.9">
+    <g transform="translate(0, 0)">
+      <animateTransform 
+        attributeName="transform" 
+        type="translate" 
+        values="450,240; 480,230; 510,250; 490,260; 450,240" 
+        dur="3.5s" 
+        repeatCount="indefinite" />
+      
+      <!-- Bee body -->
+      <ellipse cx="0" cy="0" rx="18" ry="10" fill="url(#beeBodyGradient)" filter="url(#glow)" />
+      
+      <!-- Bee stripes -->
+      <ellipse cx="-4" cy="0" rx="2.5" ry="8" fill="url(#beeStripeGradient)" />
+      <ellipse cx="4" cy="0" rx="2.5" ry="8" fill="url(#beeStripeGradient)" />
+      
+      <!-- Bee wings -->
+      <g opacity="0.7">
+        <ellipse cx="-12" cy="-6" rx="9" ry="5" fill="url(#beeWingGradient)" transform="rotate(-15)">
+          <animateTransform attributeName="transform" type="rotate" values="-15; -25; -15" dur="0.25s" repeatCount="indefinite" />
+        </ellipse>
+        <ellipse cx="12" cy="-6" rx="9" ry="5" fill="url(#beeWingGradient)" transform="rotate(15)">
+          <animateTransform attributeName="transform" type="rotate" values="15; 25; 15" dur="0.25s" repeatCount="indefinite" />
+        </ellipse>
+      </g>
+      
+      <!-- AI circuit on bee -->
+      <circle cx="0" cy="0" r="3.5" fill="url(#roadmapGradient)" opacity="0.8" />
+    </g>
+  </g>
+  
+  <!-- Bee 3: Flying near feature cards -->
+  <g opacity="0.8">
+    <g transform="translate(0, 0)">
+      <animateTransform 
+        attributeName="transform" 
+        type="translate" 
+        values="150,200; 170,190; 180,210; 160,220; 150,200" 
+        dur="5s" 
+        repeatCount="indefinite" />
+      
+      <!-- Bee body -->
+      <ellipse cx="0" cy="0" rx="16" ry="9" fill="url(#beeBodyGradient)" filter="url(#glow)" />
+      
+      <!-- Bee stripes -->
+      <ellipse cx="-3" cy="0" rx="2" ry="7" fill="url(#beeStripeGradient)" />
+      <ellipse cx="3" cy="0" rx="2" ry="7" fill="url(#beeStripeGradient)" />
+      
+      <!-- Bee wings -->
+      <g opacity="0.6">
+        <ellipse cx="-10" cy="-5" rx="8" ry="4" fill="url(#beeWingGradient)" transform="rotate(-10)">
+          <animateTransform attributeName="transform" type="rotate" values="-10; -20; -10" dur="0.4s" repeatCount="indefinite" />
+        </ellipse>
+        <ellipse cx="10" cy="-5" rx="8" ry="4" fill="url(#beeWingGradient)" transform="rotate(10)">
+          <animateTransform attributeName="transform" type="rotate" values="10; 20; 10" dur="0.4s" repeatCount="indefinite" />
+        </ellipse>
+      </g>
+      
+      <!-- AI circuit on bee -->
+      <circle cx="0" cy="0" r="3" fill="url(#brightGradient)" opacity="0.9" />
+    </g>
+  </g>
+  
+  <!-- Bee 4: Small bee flying in top area -->
+  <g opacity="0.8">
+    <g transform="translate(0, 0)">
+      <animateTransform 
+        attributeName="transform" 
+        type="translate" 
+        values="600,100; 620,90; 640,110; 615,120; 600,100" 
+        dur="4.5s" 
+        repeatCount="indefinite" />
+      
+      <!-- Bee body -->
+      <ellipse cx="0" cy="0" rx="14" ry="8" fill="url(#beeBodyGradient)" filter="url(#glow)" />
+      
+      <!-- Bee stripes -->
+      <ellipse cx="-2.5" cy="0" rx="1.5" ry="6" fill="url(#beeStripeGradient)" />
+      <ellipse cx="2.5" cy="0" rx="1.5" ry="6" fill="url(#beeStripeGradient)" />
+      
+      <!-- Bee wings -->
+      <g opacity="0.6">
+        <ellipse cx="-9" cy="-4" rx="7" ry="3.5" fill="url(#beeWingGradient)" transform="rotate(-12)">
+          <animateTransform attributeName="transform" type="rotate" values="-12; -22; -12" dur="0.35s" repeatCount="indefinite" />
+        </ellipse>
+        <ellipse cx="9" cy="-4" rx="7" ry="3.5" fill="url(#beeWingGradient)" transform="rotate(12)">
+          <animateTransform attributeName="transform" type="rotate" values="12; 22; 12" dur="0.35s" repeatCount="indefinite" />
+        </ellipse>
+      </g>
+      
+      <!-- AI circuit on bee -->
+      <circle cx="0" cy="0" r="2.5" fill="url(#aiGradient)" opacity="0.9" />
     </g>
   </g>
 </svg>
