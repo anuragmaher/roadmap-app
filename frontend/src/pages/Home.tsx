@@ -47,10 +47,37 @@ const Home: React.FC = () => {
     fetchPublicRoadmapsAndItems();
   }, []);
 
-  // Organize items by status
-  const completedItems = allItems.filter(item => item.status === 'completed');
-  const inProgressItems = allItems.filter(item => item.status === 'in-progress');
-  const plannedItems = allItems.filter(item => item.status === 'planned');
+  // Function to sort items by quarter chronologically
+  const sortItemsByQuarter = (items: Item[]) => {
+    return items.sort((a, b) => {
+      // Extract year and quarter from format like "2025-Q2" or legacy "Q2"
+      const parseQuarter = (quarter: string) => {
+        if (quarter.includes('-')) {
+          // New format: "2025-Q2"
+          const [year, q] = quarter.split('-');
+          return { year: parseInt(year), quarter: parseInt(q.replace('Q', '')) };
+        } else {
+          // Legacy format: "Q2" - assume current year
+          const currentYear = new Date().getFullYear();
+          return { year: currentYear, quarter: parseInt(quarter.replace('Q', '')) };
+        }
+      };
+
+      const aQuarter = parseQuarter(a.quarter);
+      const bQuarter = parseQuarter(b.quarter);
+
+      // Sort by year first, then by quarter
+      if (aQuarter.year !== bQuarter.year) {
+        return aQuarter.year - bQuarter.year;
+      }
+      return aQuarter.quarter - bQuarter.quarter;
+    });
+  };
+
+  // Organize items by status and sort each group by quarter
+  const completedItems = sortItemsByQuarter(allItems.filter(item => item.status === 'completed'));
+  const inProgressItems = sortItemsByQuarter(allItems.filter(item => item.status === 'in-progress'));
+  const plannedItems = sortItemsByQuarter(allItems.filter(item => item.status === 'planned'));
 
   const renderItemsSection = (title: string, items: Item[], statusClass: string) => {
     if (items.length === 0) return null;
