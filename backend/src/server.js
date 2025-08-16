@@ -24,7 +24,14 @@ app.use('/api/auth', authRoutes);
 app.use('/api/roadmaps', roadmapRoutes);
 app.use('/api/items', itemRoutes);
 
-// 🚀 Remove app.listen here
-// Vercel will manage the server for us
+// Setup for both local development and Vercel deployment
+const PORT = process.env.PORT || 5001;
+
+// Only start the server if we're not in a serverless environment
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
 
 module.exports = app;

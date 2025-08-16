@@ -1,7 +1,15 @@
 import axios from 'axios';
 import { AuthResponse } from '../types';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || '/api';
+// Handle API URL with or without trailing slash
+let API_BASE_URL = process.env.REACT_APP_API_URL || '/api';
+
+// Ensure the base URL doesn't end with a slash to prevent double slashes
+if (API_BASE_URL.endsWith('/')) {
+  API_BASE_URL = API_BASE_URL + 'api';
+} else {
+  API_BASE_URL = API_BASE_URL + '/api';
+}
 
 const api = axios.create({
   baseURL: API_BASE_URL,
