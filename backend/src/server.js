@@ -24,12 +24,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/roadmaps', roadmapRoutes);
 app.use('/api/items', itemRoutes);
 
-const PORT = process.env.PORT || 5001;
-
-if (process.env.NODE_ENV !== 'production') {
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-  });
-}
+// 🚀 Remove app.listen here
+// Vercel will manage the server for us
 
 module.exports = app;

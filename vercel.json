@@ -1,21 +1,11 @@
 {
-  "version": 2,
   "functions": {
-    "backend/src/server.js": {
+    "api/index.js": {
       "runtime": "nodejs18.x"
     }
   },
-  "env": {
-    "REACT_APP_API_URL": "/api"
-  },
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "/backend/src/server.js"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
-    }
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/index.js" },
+    { "source": "/(.*)", "destination": "/frontend/$1" }
   ]
 }
