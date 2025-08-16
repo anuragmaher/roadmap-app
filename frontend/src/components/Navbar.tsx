@@ -5,7 +5,7 @@ import { useTheme } from '../contexts/ThemeContext';
 
 const Navbar: React.FC = () => {
   const { user, logout } = useAuth();
-  const { isDark, toggleTheme } = useTheme();
+  const { isDark, toggleTheme, themeSource, setSystemTheme } = useTheme();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -21,9 +21,24 @@ const Navbar: React.FC = () => {
         </Link>
         
         <div className="nav-menu">
-          <button onClick={toggleTheme} className="theme-toggle">
-            {isDark ? '☀️' : '🌙'}
-          </button>
+          <div className="theme-controls">
+            <button 
+              onClick={toggleTheme} 
+              className="theme-toggle"
+              title={`Switch to ${isDark ? 'light' : 'dark'} mode`}
+            >
+              {isDark ? '☀️' : '🌙'}
+            </button>
+            {themeSource === 'manual' && (
+              <button 
+                onClick={setSystemTheme}
+                className="system-theme-btn"
+                title="Use system theme"
+              >
+                🖥️
+              </button>
+            )}
+          </div>
           
           {user ? (
             <div className="nav-user">

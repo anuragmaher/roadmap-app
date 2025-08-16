@@ -833,6 +833,44 @@
   font-size: 0.75rem;
 }
 
+/* Colorful tag styles */
+.tag-colorful {
+  background-color: var(--tag-bg);
+  color: var(--tag-text);
+  border: 1px solid var(--tag-border);
+  border-radius: 0.375rem;
+  font-weight: 500;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.75rem;
+  display: inline-block;
+  transition: all 0.2s ease;
+  text-transform: capitalize;
+}
+
+.tag-colorful:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="dark"] .tag-colorful:hover {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.tag-small {
+  font-size: 0.625rem;
+  padding: 0.125rem 0.5rem;
+}
+
+.tag-default {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.75rem;
+}
+
+.tag-large {
+  font-size: 0.875rem;
+  padding: 0.375rem 1rem;
+}
+
 .item-actions {
   display: flex;
   gap: 0.5rem;

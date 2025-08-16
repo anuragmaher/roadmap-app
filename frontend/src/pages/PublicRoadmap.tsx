@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { roadmapApi } from '../services/api';
 import { Roadmap } from '../types';
 import { getAvailableQuarters, parseQuarterValue, itemBelongsToQuarter } from '../utils/quarters';
+import Tag from '../components/Tag';
 
 const PublicRoadmap: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -113,7 +114,9 @@ const PublicRoadmap: React.FC = () => {
                     {item.tags.length > 0 && (
                       <div className="tags">
                         {item.tags.map((tag, index) => (
-                          <span key={index} className="tag">{tag}</span>
+                          <Tag key={index} variant="small">
+                            {tag}
+                          </Tag>
                         ))}
                       </div>
                     )}
@@ -157,7 +160,9 @@ const PublicRoadmap: React.FC = () => {
               {item.tags.length > 0 && (
                 <div className="tags">
                   {item.tags.map((tag, index) => (
-                    <span key={index} className="tag">{tag}</span>
+                    <Tag key={index} variant="default">
+                      {tag}
+                    </Tag>
                   ))}
                 </div>
               )}

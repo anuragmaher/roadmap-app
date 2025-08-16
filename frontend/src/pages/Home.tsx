@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { roadmapApi, itemApi } from '../services/api';
 import { Item } from '../types';
+import Tag from '../components/Tag';
 
 const Home: React.FC = () => {
   const [allItems, setAllItems] = useState<Item[]>([]);
@@ -80,7 +81,9 @@ const Home: React.FC = () => {
               {item.tags && item.tags.length > 0 && (
                 <div className="tags">
                   {item.tags.map((tag: string, index: number) => (
-                    <span key={index} className="tag">{tag}</span>
+                    <Tag key={index} variant="default">
+                      {tag}
+                    </Tag>
                   ))}
                 </div>
               )}

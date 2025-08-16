@@ -30,7 +30,11 @@ router.post('/roadmap/:roadmapId', auth, [
   body('tags').optional().isArray(),
   body('status').optional().isIn(['planned', 'in-progress', 'completed', 'cancelled']),
   body('order').optional().isNumeric(),
-  body('image').optional().isString()
+  body('image').optional({ nullable: true }).custom((value) => {
+    if (value === null || value === undefined) return true;
+    if (typeof value === 'string') return true;
+    throw new Error('Image must be a string or null');
+  })
 ], createItem);
 
 router.put('/:itemId', auth, [
@@ -40,7 +44,11 @@ router.put('/:itemId', auth, [
   body('tags').optional().isArray(),
   body('status').optional().isIn(['planned', 'in-progress', 'completed', 'cancelled']),
   body('order').optional().isNumeric(),
-  body('image').optional().isString()
+  body('image').optional({ nullable: true }).custom((value) => {
+    if (value === null || value === undefined) return true;
+    if (typeof value === 'string') return true;
+    throw new Error('Image must be a string or null');
+  })
 ], updateItem);
 
 router.delete('/:itemId', auth, deleteItem);

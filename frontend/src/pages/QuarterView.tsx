@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { itemApi } from '../services/api';
 import { Item } from '../types';
+import Tag from '../components/Tag';
 
 const QuarterView: React.FC = () => {
   const { slug, quarter } = useParams<{ slug: string; quarter: string }>();
@@ -126,7 +127,9 @@ const QuarterView: React.FC = () => {
                       {item.tags.length > 0 && (
                         <div className="tags">
                           {item.tags.map((tag, index) => (
-                            <span key={index} className="tag">{tag}</span>
+                            <Tag key={index} variant="default">
+                              {tag}
+                            </Tag>
                           ))}
                         </div>
                       )}

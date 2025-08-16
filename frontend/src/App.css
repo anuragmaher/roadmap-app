@@ -133,7 +133,14 @@ body {
   font-size: 0.875rem;
 }
 
-.theme-toggle {
+.theme-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.theme-toggle,
+.system-theme-btn {
   background: none;
   border: none;
   font-size: 1.25rem;
@@ -143,8 +150,18 @@ body {
   transition: background-color 0.2s;
 }
 
-.theme-toggle:hover {
+.theme-toggle:hover,
+.system-theme-btn:hover {
   background-color: var(--border-color);
+}
+
+.system-theme-btn {
+  font-size: 1rem;
+  opacity: 0.8;
+}
+
+.system-theme-btn:hover {
+  opacity: 1;
 }
 
 .logout-btn {

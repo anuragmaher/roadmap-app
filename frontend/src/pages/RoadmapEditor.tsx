@@ -4,6 +4,7 @@ import { roadmapApi, itemApi } from '../services/api';
 import { Roadmap, Item } from '../types';
 import { getAvailableQuarters, getQuarterOptions, itemBelongsToQuarter } from '../utils/quarters';
 import ImageUpload from '../components/ImageUpload';
+import Tag from '../components/Tag';
 
 const RoadmapEditor: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -269,7 +270,9 @@ const RoadmapEditor: React.FC = () => {
                   {item.tags.length > 0 && (
                     <div className="tags">
                       {item.tags.map((tag, index) => (
-                        <span key={index} className="tag">{tag}</span>
+                        <Tag key={index} variant="small">
+                          {tag}
+                        </Tag>
                       ))}
                     </div>
                   )}
