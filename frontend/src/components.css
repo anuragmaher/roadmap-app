@@ -21,6 +21,11 @@
   overflow: hidden;
 }
 
+[data-theme="dark"] .hero {
+  background: linear-gradient(135deg, #1e293b 0%, #334155 50%, #475569 100%);
+  border: 1px solid rgba(51, 65, 85, 0.5);
+}
+
 .hero::before {
   content: '';
   position: absolute;
