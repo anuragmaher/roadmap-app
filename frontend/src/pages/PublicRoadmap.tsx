@@ -28,48 +28,6 @@ const PublicRoadmap: React.FC = () => {
     }
   }, [slug, fetchRoadmap]);
 
-  // Organize items by status like the home page
-  const renderItemsSection = (title: string, items: any[], statusClass: string) => {
-    if (!items || items.length === 0) return null;
-    
-    return (
-      <div className="status-section">
-        <h3 className={`status-section-title ${statusClass}`}>{title}</h3>
-        <div className="items-half-row-grid">
-          {items.map((item: any) => (
-            <div key={item._id} className={`roadmap-item-card ${item.image ? 'has-image' : ''}`}>
-              {item.image && (
-                <img 
-                  src={item.image} 
-                  alt={item.title}
-                  className="item-image"
-                />
-              )}
-              <div className="item-header">
-                <h4>{item.title}</h4>
-                <span className={`status-badge ${item.status}`}>
-                  {item.status.replace('-', ' ')}
-                </span>
-              </div>
-              <p className="item-description">{item.description}</p>
-              <div className="item-meta">
-                <span className="quarter-info">{item.quarter}</span>
-              </div>
-              {item.tags && item.tags.length > 0 && (
-                <div className="tags">
-                  {item.tags.map((tag: string, index: number) => (
-                    <Tag key={index} variant="default">
-                      {tag}
-                    </Tag>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  };
 
   if (loading) return <div className="loading">Loading...</div>;
   if (error) return <div className="error-message">{error}</div>;
@@ -77,11 +35,6 @@ const PublicRoadmap: React.FC = () => {
 
   const items = roadmap.items || [];
   const availableQuarters = getAvailableQuarters();
-  
-  // Organize items by status
-  const completedItems = items.filter(item => item.status === 'completed');
-  const inProgressItems = items.filter(item => item.status === 'in-progress');
-  const plannedItems = items.filter(item => item.status === 'planned');
   
   // Get all unique quarters from items (including legacy format)
   const allQuartersInItems = Array.from(new Set(items.map(item => item.quarter)));
@@ -122,19 +75,6 @@ const PublicRoadmap: React.FC = () => {
         </div>
       </div>
 
-      <div className="ai-initiatives">
-        {items.length === 0 ? (
-          <div className="hiver-roadmap-placeholder">
-            <p>No items in this roadmap yet.</p>
-          </div>
-        ) : (
-          <div className="all-initiatives">
-            {renderItemsSection('✅ Completed', completedItems, 'completed')}
-            {renderItemsSection('🚧 In Progress', inProgressItems, 'in-progress')}
-            {renderItemsSection('📋 Planned', plannedItems, 'planned')}
-          </div>
-        )}
-      </div>
 
       <div className="quarter-navigation" style={{ marginTop: '4rem' }}>
         <h2>View by Quarter</h2>
