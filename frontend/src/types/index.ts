@@ -29,6 +29,7 @@ export interface Item {
   status: 'planned' | 'in-progress' | 'completed' | 'cancelled';
   roadmap: string;
   order: number;
+  image?: string | null;
   createdAt: string;
   updatedAt: string;
 }

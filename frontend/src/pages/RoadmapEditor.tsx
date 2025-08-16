@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { roadmapApi, itemApi } from '../services/api';
 import { Roadmap, Item } from '../types';
 import { getAvailableQuarters, getQuarterOptions, itemBelongsToQuarter } from '../utils/quarters';
+import ImageUpload from '../components/ImageUpload';
 
 const RoadmapEditor: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -18,7 +19,8 @@ const RoadmapEditor: React.FC = () => {
     quarter: getQuarterOptions()[1]?.value || '2025-Q3', // Default to current quarter
     tags: [] as string[],
     status: 'planned' as 'planned' | 'in-progress' | 'completed' | 'cancelled',
-    order: 0
+    order: 0,
+    image: null as string | null
   });
 
   const fetchRoadmapData = useCallback(async () => {
@@ -54,7 +56,8 @@ const RoadmapEditor: React.FC = () => {
         quarter: getQuarterOptions()[1]?.value || '2025-Q3',
         tags: [],
         status: 'planned',
-        order: 0
+        order: 0,
+        image: null
       });
       setShowItemForm(false);
     } catch (err: any) {
@@ -78,7 +81,8 @@ const RoadmapEditor: React.FC = () => {
         quarter: getQuarterOptions()[1]?.value || '2025-Q3',
         tags: [],
         status: 'planned',
-        order: 0
+        order: 0,
+        image: null
       });
       setShowItemForm(false);
     } catch (err: any) {
@@ -109,7 +113,8 @@ const RoadmapEditor: React.FC = () => {
       quarter: item.quarter,
       tags: item.tags,
       status: item.status,
-      order: item.order
+      order: item.order,
+      image: item.image || null
     });
     setShowItemForm(true);
   };
@@ -204,6 +209,10 @@ const RoadmapEditor: React.FC = () => {
                   onChange={(e) => handleTagInput(e.target.value)}
                 />
               </div>
+              <ImageUpload
+                currentImage={newItem.image}
+                onImageChange={(imageData) => setNewItem({...newItem, image: imageData})}
+              />
               <div className="form-actions">
                 <button type="submit" className="submit-btn">
                   {editingItem ? 'Update' : 'Create'}
@@ -219,7 +228,8 @@ const RoadmapEditor: React.FC = () => {
                       quarter: getQuarterOptions()[1]?.value || '2025-Q3',
                       tags: [],
                       status: 'planned',
-                      order: 0
+                      order: 0,
+                      image: null
                     });
                   }}
                   className="cancel-btn"
@@ -241,6 +251,14 @@ const RoadmapEditor: React.FC = () => {
             <div className="items-list">
               {quarterItems.map((item) => (
                 <div key={item._id} className="item-card">
+                  {item.image && (
+                    <img 
+                      src={item.image} 
+                      alt={item.title}
+                      className="item-image"
+                      style={{ width: '100%', height: '80px', objectFit: 'cover', borderRadius: '0.375rem', marginBottom: '0.5rem' }}
+                    />
+                  )}
                   <div className="item-header">
                     <h4>{item.title}</h4>
                     <span className={`status-badge ${item.status}`}>

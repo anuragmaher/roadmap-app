@@ -29,7 +29,8 @@ router.post('/roadmap/:roadmapId', auth, [
   body('quarter').matches(/^\d{4}-Q[1-4]$|^Q[1-4]$/).withMessage('Quarter must be in format YYYY-QN (e.g., "2025-Q1") or legacy format (e.g., "Q1")'),
   body('tags').optional().isArray(),
   body('status').optional().isIn(['planned', 'in-progress', 'completed', 'cancelled']),
-  body('order').optional().isNumeric()
+  body('order').optional().isNumeric(),
+  body('image').optional().isString()
 ], createItem);
 
 router.put('/:itemId', auth, [
@@ -38,7 +39,8 @@ router.put('/:itemId', auth, [
   body('quarter').optional().matches(/^\d{4}-Q[1-4]$|^Q[1-4]$/),
   body('tags').optional().isArray(),
   body('status').optional().isIn(['planned', 'in-progress', 'completed', 'cancelled']),
-  body('order').optional().isNumeric()
+  body('order').optional().isNumeric(),
+  body('image').optional().isString()
 ], updateItem);
 
 router.delete('/:itemId', auth, deleteItem);

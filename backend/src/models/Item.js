@@ -38,6 +38,10 @@ const itemSchema = new mongoose.Schema({
   order: {
     type: Number,
     default: 0
+  },
+  image: {
+    type: String,
+    default: null
   }
 }, {
   timestamps: true

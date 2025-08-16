@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { roadmapApi, itemApi } from '../services/api';
-import { Roadmap, Item } from '../types';
+import { Item } from '../types';
 
 const Home: React.FC = () => {
   const [allItems, setAllItems] = useState<Item[]>([]);
@@ -59,7 +59,14 @@ const Home: React.FC = () => {
         <h3 className={`status-section-title ${statusClass}`}>{title}</h3>
         <div className="items-half-row-grid">
           {items.map((item: any) => (
-            <div key={item._id} className="roadmap-item-card">
+            <div key={item._id} className={`roadmap-item-card ${item.image ? 'has-image' : ''}`}>
+              {item.image && (
+                <img 
+                  src={item.image} 
+                  alt={item.title}
+                  className="item-image"
+                />
+              )}
               <div className="item-header">
                 <h4>{item.title}</h4>
                 <span className={`status-badge ${item.status}`}>
@@ -68,11 +75,6 @@ const Home: React.FC = () => {
               </div>
               <p className="item-description">{item.description}</p>
               <div className="item-meta">
-                <span className="roadmap-reference">
-                  <Link to={`/roadmap/${item.roadmapSlug}`}>
-                    {item.roadmapTitle}
-                  </Link>
-                </span>
                 <span className="quarter-info">{item.quarter}</span>
               </div>
               {item.tags && item.tags.length > 0 && (
