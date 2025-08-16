@@ -16,6 +16,11 @@ mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('Connected to MongoDB'))
   .catch(err => console.error('MongoDB connection error:', err));
 
+// Add a root route for serverless debugging
+app.get('/', (req, res) => {
+  res.json({ status: 'OK', message: 'Roadmap API root' });
+});
+
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'Roadmap API is running' });
 });
