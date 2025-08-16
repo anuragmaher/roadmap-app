@@ -32,11 +32,12 @@ app.use('/api/items', itemRoutes);
 // Setup for both local development and Vercel deployment
 const PORT = process.env.PORT || 5001;
 
-// Only start the server if we're not in a serverless environment
-if (process.env.NODE_ENV !== 'production') {
+// Export the app for serverless functions
+module.exports = app;
+
+// Only start the server if not in serverless environment
+if (require.main === module) {
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
   });
 }
-
-module.exports = app;

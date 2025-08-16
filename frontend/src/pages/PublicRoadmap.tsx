@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { roadmapApi } from '../services/api';
-import { Roadmap, Item } from '../types';
+import { Roadmap } from '../types';
 
 const PublicRoadmap: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -9,13 +9,7 @@ const PublicRoadmap: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    if (slug) {
-      fetchRoadmap();
-    }
-  }, [slug]);
-
-  const fetchRoadmap = async () => {
+  const fetchRoadmap = useCallback(async () => {
     try {
       const data = await roadmapApi.getBySlug(slug!);
       setRoadmap(data);
@@ -24,7 +18,13 @@ const PublicRoadmap: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [slug]);
+
+  useEffect(() => {
+    if (slug) {
+      fetchRoadmap();
+    }
+  }, [slug, fetchRoadmap]);
 
   if (loading) return <div className="loading">Loading...</div>;
   if (error) return <div className="error-message">{error}</div>;

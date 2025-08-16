@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useParams } from 'react-router-dom';
 import { roadmapApi, itemApi } from '../services/api';
 import { Roadmap, Item } from '../types';
 
 const RoadmapEditor: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
-  const navigate = useNavigate();
   const [roadmap, setRoadmap] = useState<Roadmap | null>(null);
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
@@ -21,13 +20,7 @@ const RoadmapEditor: React.FC = () => {
     order: 0
   });
 
-  useEffect(() => {
-    if (slug) {
-      fetchRoadmapData();
-    }
-  }, [slug]);
-
-  const fetchRoadmapData = async () => {
+  const fetchRoadmapData = useCallback(async () => {
     try {
       const roadmapData = await roadmapApi.getBySlug(slug!);
       setRoadmap(roadmapData);
@@ -39,7 +32,13 @@ const RoadmapEditor: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [slug]);
+
+  useEffect(() => {
+    if (slug) {
+      fetchRoadmapData();
+    }
+  }, [slug, fetchRoadmapData]);
 
   const handleCreateItem = async (e: React.FormEvent) => {
     e.preventDefault();

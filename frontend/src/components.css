@@ -571,6 +571,15 @@
   font-size: 0.875rem;
 }
 
+.item-preview .status-badge {
+  margin-bottom: 0.5rem;
+  display: inline-block;
+}
+
+.item-preview .tags {
+  margin-top: 0.5rem;
+}
+
 .more-items {
   color: var(--text-secondary);
   font-size: 0.875rem;

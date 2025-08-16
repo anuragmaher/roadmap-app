@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { itemApi } from '../services/api';
 import { Item } from '../types';
@@ -17,13 +17,7 @@ const QuarterView: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    if (slug && quarter) {
-      fetchQuarterData();
-    }
-  }, [slug, quarter]);
-
-  const fetchQuarterData = async () => {
+  const fetchQuarterData = useCallback(async () => {
     try {
       const response = await itemApi.getByQuarter(slug!, quarter!);
       setData(response);
@@ -32,7 +26,13 @@ const QuarterView: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [slug, quarter]);
+
+  useEffect(() => {
+    if (slug && quarter) {
+      fetchQuarterData();
+    }
+  }, [slug, quarter, fetchQuarterData]);
 
   if (loading) return <div className="loading">Loading...</div>;
   if (error) return <div className="error-message">{error}</div>;
