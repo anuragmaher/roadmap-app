@@ -1,39 +1,93 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { roadmapApi } from '../services/api';
-import { Roadmap } from '../types';
-import { getAvailableQuarters } from '../utils/quarters';
+import { roadmapApi, itemApi } from '../services/api';
+import { Roadmap, Item } from '../types';
 
 const Home: React.FC = () => {
-  const [roadmaps, setRoadmaps] = useState<Roadmap[]>([]);
+  const [allItems, setAllItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    const fetchPublicRoadmaps = async () => {
+    const fetchPublicRoadmapsAndItems = async () => {
       try {
-        const data = await roadmapApi.getPublic();
-        console.log('API response:', data); // Debug log
+        const roadmapsData = await roadmapApi.getPublic();
+        console.log('API response:', roadmapsData); // Debug log
         
         // Ensure data is an array
-        if (Array.isArray(data)) {
-          setRoadmaps(data);
+        if (Array.isArray(roadmapsData)) {
+          
+          // Fetch all items from all public roadmaps
+          const itemsPromises = roadmapsData.map(async (roadmap) => {
+            try {
+              const items = await itemApi.getByRoadmap(roadmap._id);
+              return items.map(item => ({ ...item, roadmapTitle: roadmap.title, roadmapSlug: roadmap.slug }));
+            } catch (err) {
+              console.error(`Failed to fetch items for roadmap ${roadmap._id}:`, err);
+              return [];
+            }
+          });
+          
+          const allItemsArrays = await Promise.all(itemsPromises);
+          const flattenedItems = allItemsArrays.flat();
+          setAllItems(flattenedItems);
         } else {
-          console.error('API did not return an array:', data);
+          console.error('API did not return an array:', roadmapsData);
           setError('Invalid response format from server');
-          setRoadmaps([]);
         }
       } catch (err: any) {
         console.error('API error:', err);
         setError(`Failed to load roadmaps: ${err.response?.data?.message || err.message || 'Unknown error'}`);
-        setRoadmaps([]);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchPublicRoadmaps();
+    fetchPublicRoadmapsAndItems();
   }, []);
+
+  // Organize items by status
+  const completedItems = allItems.filter(item => item.status === 'completed');
+  const inProgressItems = allItems.filter(item => item.status === 'in-progress');
+  const plannedItems = allItems.filter(item => item.status === 'planned');
+
+  const renderItemsSection = (title: string, items: Item[], statusClass: string) => {
+    if (items.length === 0) return null;
+    
+    return (
+      <div className="status-section">
+        <h3 className={`status-section-title ${statusClass}`}>{title}</h3>
+        <div className="items-half-row-grid">
+          {items.map((item: any) => (
+            <div key={item._id} className="roadmap-item-card">
+              <div className="item-header">
+                <h4>{item.title}</h4>
+                <span className={`status-badge ${item.status}`}>
+                  {item.status.replace('-', ' ')}
+                </span>
+              </div>
+              <p className="item-description">{item.description}</p>
+              <div className="item-meta">
+                <span className="roadmap-reference">
+                  <Link to={`/roadmap/${item.roadmapSlug}`}>
+                    {item.roadmapTitle}
+                  </Link>
+                </span>
+                <span className="quarter-info">{item.quarter}</span>
+              </div>
+              {item.tags && item.tags.length > 0 && (
+                <div className="tags">
+                  {item.tags.map((tag: string, index: number) => (
+                    <span key={index} className="tag">{tag}</span>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
 
   if (loading) return <div className="loading">Loading...</div>;
 
@@ -49,7 +103,7 @@ const Home: React.FC = () => {
         <h2>AI Initiatives & Features</h2>
         {error && <div className="error-message">{error}</div>}
         
-        {roadmaps.length === 0 ? (
+        {allItems.length === 0 ? (
           <div className="hiver-roadmap-placeholder">
             <p>Our AI roadmap is being prepared. Check back soon for exciting updates!</p>
             <div className="ai-highlights">
@@ -68,33 +122,10 @@ const Home: React.FC = () => {
             </div>
           </div>
         ) : (
-          <div className="roadmap-grid">
-            {roadmaps.filter(roadmap => 
-              roadmap.title.toLowerCase().includes('hiver') || 
-              roadmap.title.toLowerCase().includes('ai') ||
-              roadmap.slug.includes('hiver')
-            ).map((roadmap) => (
-              <div key={roadmap._id} className="roadmap-card">
-                <h3>{roadmap.title}</h3>
-                <p>{roadmap.description}</p>
-                <div className="roadmap-meta">
-                  <span>Team: Hiver AI & Product</span>
-                  <div className="quarter-links">
-                    {getAvailableQuarters().map(quarter => (
-                      <Link 
-                        key={quarter.value}
-                        to={`/roadmap/${roadmap.slug}/${quarter.value.toLowerCase()}`}
-                      >
-                        {quarter.label}
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-                <Link to={`/roadmap/${roadmap.slug}`} className="view-btn">
-                  View Full Roadmap
-                </Link>
-              </div>
-            ))}
+          <div className="all-initiatives">
+            {renderItemsSection('✅ Completed', completedItems, 'completed')}
+            {renderItemsSection('🚧 In Progress', inProgressItems, 'in-progress')}
+            {renderItemsSection('📋 Planned', plannedItems, 'planned')}
           </div>
         )}
       </div>
