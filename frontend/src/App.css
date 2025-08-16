@@ -19,7 +19,7 @@
   --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   --gradient-accent: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
   --border-radius: 0.75rem;
-  --border-radius-lg: 1rem;
+  --border-radius-lg: 2rem;
 }
 
 [data-theme="dark"] {

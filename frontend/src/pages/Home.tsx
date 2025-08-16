@@ -126,9 +126,16 @@ const Home: React.FC = () => {
   return (
     <div className="home">
       <div className="hero">
-        <h1>Hiver AI Roadmap</h1>
-        <p>Explore our AI-powered initiatives and upcoming features for customer support excellence</p>
-        <Link to="/roadmap/hiver-ai" className="cta-btn">View Full Roadmap</Link>
+        <div className="hero-content">
+          <div className="hero-text">
+            <h1>Hiver AI Roadmap</h1>
+            <p>Explore our AI-powered initiatives and upcoming features for customer support excellence</p>
+            <Link to="/roadmap/hiver-ai" className="cta-btn">View Full Roadmap</Link>
+          </div>
+          <div className="hero-image">
+            <img src="/hero-illustration.svg" alt="AI Roadmap Illustration" />
+          </div>
+        </div>
       </div>
 
       <div className="ai-initiatives">

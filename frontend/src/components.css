@@ -11,14 +11,46 @@
 }
 
 .hero {
-  text-align: center;
-  padding: 6rem 2rem;
+  padding: 4rem 2rem;
   background: var(--gradient-primary);
   color: white;
   margin-bottom: 4rem;
   border-radius: var(--border-radius-lg);
   position: relative;
   overflow: hidden;
+}
+
+.hero-content {
+  display: flex;
+  align-items: center;
+  gap: 4rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 2;
+}
+
+.hero-text {
+  flex: 1;
+  text-align: left;
+}
+
+.hero-image {
+  flex: 1;
+  max-width: 500px;
+}
+
+.hero-image img {
+  width: 100%;
+  height: auto;
+  opacity: 1;
+  transition: all 0.3s ease;
+  filter: brightness(1.1) contrast(1.1);
+}
+
+.hero-image:hover img {
+  transform: scale(1.02);
+  filter: brightness(1.2) contrast(1.2);
 }
 
 [data-theme="dark"] .hero {
@@ -524,7 +556,7 @@
 /* Dashboard Styles */
 .dashboard {
   padding: 2rem 1rem;
-  max-width: 1200px;
+  /* max-width: 1200px; */
   margin: 0 auto;
 }
 
@@ -1119,7 +1151,7 @@
 /* Quarter View Styles */
 .quarter-view {
   padding: 2rem 1rem;
-  max-width: 1200px;
+  /* max-width: 1200px; */
   margin: 0 auto;
 }
 
@@ -1217,12 +1249,31 @@
 /* Responsive Design */
 
 @media (max-width: 768px) {
+  .hero {
+    padding: 2rem 1rem;
+  }
+  
+  .hero-content {
+    flex-direction: column;
+    gap: 2rem;
+    text-align: center;
+  }
+  
+  .hero-text {
+    text-align: center;
+  }
+  
   .hero h1 {
     font-size: 2rem;
   }
   
   .hero p {
     font-size: 1rem;
+  }
+  
+  .hero-image {
+    max-width: 350px;
+    margin: 0 auto;
   }
   
   .roadmap-grid {
