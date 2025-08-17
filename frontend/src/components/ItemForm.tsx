@@ -11,6 +11,8 @@ interface ItemFormData {
   status: 'planned' | 'in-progress' | 'completed' | 'cancelled';
   order: number;
   image: string | null;
+  prdLink?: string;
+  figmaLink?: string;
 }
 
 interface ItemFormProps {
@@ -28,7 +30,9 @@ const ItemForm: React.FC<ItemFormProps> = ({ item, onSubmit, onCancel, isLoading
     tags: [],
     status: 'planned',
     order: 0,
-    image: null
+    image: null,
+    prdLink: '',
+    figmaLink: ''
   });
 
   // Initialize form data when item changes
@@ -41,7 +45,9 @@ const ItemForm: React.FC<ItemFormProps> = ({ item, onSubmit, onCancel, isLoading
         tags: item.tags,
         status: item.status,
         order: item.order,
-        image: item.image || null
+        image: item.image || null,
+        prdLink: item.prdLink || '',
+        figmaLink: item.figmaLink || ''
       });
     } else {
       setFormData({
@@ -51,7 +57,9 @@ const ItemForm: React.FC<ItemFormProps> = ({ item, onSubmit, onCancel, isLoading
         tags: [],
         status: 'planned',
         order: 0,
-        image: null
+        image: null,
+        prdLink: '',
+        figmaLink: ''
       });
     }
   }, [item]);
@@ -136,6 +144,32 @@ const ItemForm: React.FC<ItemFormProps> = ({ item, onSubmit, onCancel, isLoading
           onChange={(e) => handleTagInput(e.target.value)}
           disabled={isLoading}
         />
+      </div>
+
+      <div className="form-row">
+        <div className="form-group">
+          <label htmlFor="prdLink">PRD Link</label>
+          <input
+            type="url"
+            id="prdLink"
+            value={formData.prdLink || ''}
+            onChange={(e) => updateFormData('prdLink', e.target.value)}
+            disabled={isLoading}
+            placeholder="https://..."
+          />
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="figmaLink">Figma Link</label>
+          <input
+            type="url"
+            id="figmaLink"
+            value={formData.figmaLink || ''}
+            onChange={(e) => updateFormData('figmaLink', e.target.value)}
+            disabled={isLoading}
+            placeholder="https://figma.com/..."
+          />
+        </div>
       </div>
 
       <ImageUpload

@@ -30,6 +30,8 @@ export interface Item {
   roadmap: string;
   order: number;
   image?: string | null;
+  prdLink?: string;
+  figmaLink?: string;
   createdAt: string;
   updatedAt: string;
 }

@@ -113,6 +113,32 @@ const Home: React.FC = () => {
                   ))}
                 </div>
               )}
+              {(item.prdLink || item.figmaLink) && (
+                <div className="item-links">
+                  {item.prdLink && (
+                    <a 
+                      href={item.prdLink} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="link-btn prd-link"
+                      title="View PRD"
+                    >
+                      📋 PRD
+                    </a>
+                  )}
+                  {item.figmaLink && (
+                    <a 
+                      href={item.figmaLink} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="link-btn figma-link"
+                      title="View Figma"
+                    >
+                      🎨 Figma
+                    </a>
+                  )}
+                </div>
+              )}
             </div>
           ))}
         </div>

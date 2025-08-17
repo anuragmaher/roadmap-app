@@ -9,7 +9,7 @@ const createItem = async (req, res) => {
     }
 
     const { roadmapId } = req.params;
-    const { title, description, quarter, tags, status, order, image } = req.body;
+    const { title, description, quarter, tags, status, order, image, prdLink, figmaLink } = req.body;
 
     const roadmap = await Roadmap.findById(roadmapId);
     if (!roadmap) {
@@ -28,7 +28,9 @@ const createItem = async (req, res) => {
       status: status || 'planned',
       roadmap: roadmapId,
       order: order || 0,
-      image: image || null
+      image: image || null,
+      prdLink: prdLink || null,
+      figmaLink: figmaLink || null
     });
 
     await item.save();
@@ -77,7 +79,7 @@ const updateItem = async (req, res) => {
     }
 
     const { itemId } = req.params;
-    const { title, description, quarter, tags, status, order, image } = req.body;
+    const { title, description, quarter, tags, status, order, image, prdLink, figmaLink } = req.body;
 
     const item = await Item.findById(itemId).populate('roadmap');
     if (!item) {
@@ -95,6 +97,8 @@ const updateItem = async (req, res) => {
     if (status !== undefined) item.status = status;
     if (order !== undefined) item.order = order;
     if (image !== undefined) item.image = image;
+    if (prdLink !== undefined) item.prdLink = prdLink;
+    if (figmaLink !== undefined) item.figmaLink = figmaLink;
 
     await item.save();
     res.json(item);

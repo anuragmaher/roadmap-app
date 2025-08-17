@@ -42,6 +42,14 @@ const itemSchema = new mongoose.Schema({
   image: {
     type: String,
     default: null
+  },
+  prdLink: {
+    type: String,
+    default: null
+  },
+  figmaLink: {
+    type: String,
+    default: null
   }
 }, {
   timestamps: true
