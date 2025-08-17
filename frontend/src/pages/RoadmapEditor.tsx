@@ -280,14 +280,14 @@ const RoadmapEditor: React.FC = () => {
                     <button 
                       onClick={() => startEditItem(item)}
                       className="edit-btn"
+                      title="Edit item"
                     >
-                      Edit
                     </button>
                     <button 
                       onClick={() => handleDeleteItem(item._id)}
                       className="delete-btn"
+                      title="Delete item"
                     >
-                      Delete
                     </button>
                   </div>
                 </div>
