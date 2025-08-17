@@ -1,0 +1,4 @@
+/* Import all component styles */
+@import './components/Modal.css';
+@import './components/Loading.css';
+@import './components/Error.css';

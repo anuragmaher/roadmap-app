@@ -2,41 +2,33 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { roadmapApi, itemApi } from '../services/api';
 import { Roadmap, Item } from '../types';
-import { getAvailableQuarters, getQuarterOptions, itemBelongsToQuarter } from '../utils/quarters';
-import ImageUpload from '../components/ImageUpload';
+import { getAvailableQuarters, itemBelongsToQuarter } from '../utils/quarters';
+import { useApi } from '../hooks/useApi';
+import { handleApiError } from '../utils/errorHandler';
+import Modal from '../components/Modal';
+import ItemForm from '../components/ItemForm';
+import LoadingSpinner from '../components/LoadingSpinner';
+import ErrorMessage from '../components/ErrorMessage';
 import Tag from '../components/Tag';
 
 const RoadmapEditor: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const [roadmap, setRoadmap] = useState<Roadmap | null>(null);
   const [items, setItems] = useState<Item[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   const [showItemForm, setShowItemForm] = useState(false);
   const [editingItem, setEditingItem] = useState<Item | null>(null);
-  const [newItem, setNewItem] = useState({
-    title: '',
-    description: '',
-    quarter: getQuarterOptions()[1]?.value || '2025-Q3', // Default to current quarter
-    tags: [] as string[],
-    status: 'planned' as 'planned' | 'in-progress' | 'completed' | 'cancelled',
-    order: 0,
-    image: null as string | null
-  });
+  
+  const { loading, error, handleApiCall, clearError } = useApi();
 
   const fetchRoadmapData = useCallback(async () => {
-    try {
+    await handleApiCall(async () => {
       const roadmapData = await roadmapApi.getBySlug(slug!);
       setRoadmap(roadmapData);
       if (roadmapData.items) {
         setItems(roadmapData.items);
       }
-    } catch (err) {
-      setError('Failed to load roadmap');
-    } finally {
-      setLoading(false);
-    }
-  }, [slug]);
+    });
+  }, [slug, handleApiCall]);
 
   useEffect(() => {
     if (slug) {
@@ -44,89 +36,51 @@ const RoadmapEditor: React.FC = () => {
     }
   }, [slug, fetchRoadmapData]);
 
-  const handleCreateItem = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleCreateItem = async (formData: any) => {
     if (!roadmap) return;
 
-    try {
-      const item = await itemApi.create(roadmap._id, newItem);
+    await handleApiCall(async () => {
+      const item = await itemApi.create(roadmap._id, formData);
       setItems([...items, item]);
-      setNewItem({
-        title: '',
-        description: '',
-        quarter: getQuarterOptions()[1]?.value || '2025-Q3',
-        tags: [],
-        status: 'planned',
-        order: 0,
-        image: null
-      });
       setShowItemForm(false);
-    } catch (err: any) {
-      console.error('Create item error:', err);
-      const errorMessage = err.response?.data?.details || err.response?.data?.message || 'Failed to create item';
-      setError(errorMessage);
-    }
+    });
   };
 
-  const handleUpdateItem = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleUpdateItem = async (formData: any) => {
     if (!editingItem) return;
 
-    try {
-      const updatedItem = await itemApi.update(editingItem._id, newItem);
+    await handleApiCall(async () => {
+      const updatedItem = await itemApi.update(editingItem._id, formData);
       setItems(items.map(item => item._id === updatedItem._id ? updatedItem : item));
       setEditingItem(null);
-      setNewItem({
-        title: '',
-        description: '',
-        quarter: getQuarterOptions()[1]?.value || '2025-Q3',
-        tags: [],
-        status: 'planned',
-        order: 0,
-        image: null
-      });
       setShowItemForm(false);
-    } catch (err: any) {
-      console.error('Update item error:', err);
-      const errorMessage = err.response?.data?.details || err.response?.data?.message || 'Failed to update item';
-      setError(errorMessage);
-    }
+    });
   };
 
   const handleDeleteItem = async (itemId: string) => {
     if (window.confirm('Are you sure you want to delete this item?')) {
-      try {
+      await handleApiCall(async () => {
         await itemApi.delete(itemId);
         setItems(items.filter(item => item._id !== itemId));
-      } catch (err: any) {
-        console.error('Delete item error:', err);
-        const errorMessage = err.response?.data?.details || err.response?.data?.message || 'Failed to delete item';
-        setError(errorMessage);
-      }
+      });
     }
   };
 
   const startEditItem = (item: Item) => {
     setEditingItem(item);
-    setNewItem({
-      title: item.title,
-      description: item.description,
-      quarter: item.quarter,
-      tags: item.tags,
-      status: item.status,
-      order: item.order,
-      image: item.image || null
-    });
     setShowItemForm(true);
   };
 
-  const handleTagInput = (value: string) => {
-    const tags = value.split(',').map(tag => tag.trim()).filter(tag => tag);
-    setNewItem({...newItem, tags});
+
+  const handleCloseModal = () => {
+    setShowItemForm(false);
+    setEditingItem(null);
   };
 
-  if (loading) return <div className="loading">Loading...</div>;
-  if (!roadmap) return <div className="error">Roadmap not found</div>;
+  const handleFormSubmit = editingItem ? handleUpdateItem : handleCreateItem;
+
+  if (loading) return <LoadingSpinner message="Loading roadmap..." />;
+  if (!roadmap) return <ErrorMessage error="Roadmap not found" />;
 
   // Group items by available quarters (including legacy quarters)
   const availableQuarters = getAvailableQuarters();
@@ -147,101 +101,20 @@ const RoadmapEditor: React.FC = () => {
         </button>
       </div>
 
-      {error && <div className="error-message">{error}</div>}
+      <ErrorMessage error={error} onDismiss={clearError} />
 
-      {showItemForm && (
-        <div className="modal">
-          <div className="modal-content">
-            <h3>{editingItem ? 'Edit Item' : 'Add New Item'}</h3>
-            <form onSubmit={editingItem ? handleUpdateItem : handleCreateItem}>
-              <div className="form-group">
-                <label htmlFor="title">Title</label>
-                <input
-                  type="text"
-                  id="title"
-                  value={newItem.title}
-                  onChange={(e) => setNewItem({...newItem, title: e.target.value})}
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="description">Description</label>
-                <textarea
-                  id="description"
-                  value={newItem.description}
-                  onChange={(e) => setNewItem({...newItem, description: e.target.value})}
-                />
-              </div>
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="quarter">Quarter</label>
-                  <select
-                    id="quarter"
-                    value={newItem.quarter}
-                    onChange={(e) => setNewItem({...newItem, quarter: e.target.value})}
-                  >
-                    {getQuarterOptions().map(option => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label htmlFor="status">Status</label>
-                  <select
-                    id="status"
-                    value={newItem.status}
-                    onChange={(e) => setNewItem({...newItem, status: e.target.value as any})}
-                  >
-                    <option value="planned">Planned</option>
-                    <option value="in-progress">In Progress</option>
-                    <option value="completed">Completed</option>
-                    <option value="cancelled">Cancelled</option>
-                  </select>
-                </div>
-              </div>
-              <div className="form-group">
-                <label htmlFor="tags">Tags (comma-separated)</label>
-                <input
-                  type="text"
-                  id="tags"
-                  value={newItem.tags.join(', ')}
-                  onChange={(e) => handleTagInput(e.target.value)}
-                />
-              </div>
-              <ImageUpload
-                currentImage={newItem.image}
-                onImageChange={(imageData) => setNewItem({...newItem, image: imageData})}
-              />
-              <div className="form-actions">
-                <button type="submit" className="submit-btn">
-                  {editingItem ? 'Update' : 'Create'}
-                </button>
-                <button 
-                  type="button" 
-                  onClick={() => {
-                    setShowItemForm(false);
-                    setEditingItem(null);
-                    setNewItem({
-                      title: '',
-                      description: '',
-                      quarter: getQuarterOptions()[1]?.value || '2025-Q3',
-                      tags: [],
-                      status: 'planned',
-                      order: 0,
-                      image: null
-                    });
-                  }}
-                  className="cancel-btn"
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <Modal
+        isOpen={showItemForm}
+        onClose={handleCloseModal}
+        title={editingItem ? 'Edit Item' : 'Add New Item'}
+      >
+        <ItemForm
+          item={editingItem}
+          onSubmit={handleFormSubmit}
+          onCancel={handleCloseModal}
+          isLoading={loading}
+        />
+      </Modal>
 
       <div className="quarters-grid">
         {availableQuarters.map((quarter) => {

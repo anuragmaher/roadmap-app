@@ -13,6 +13,7 @@ import QuarterView from './pages/QuarterView';
 import ProtectedRoute from './components/ProtectedRoute';
 import './App.css';
 import './components.css';
+import './styles/index.css';
 
 function App() {
   return (
