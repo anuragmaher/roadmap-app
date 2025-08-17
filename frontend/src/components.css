@@ -132,6 +132,28 @@
 .ai-initiatives {
   max-width: 1200px;
   margin: 0 auto;
+  padding: 4rem 2rem;
+  background: var(--surface-color);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border-color);
+  position: relative;
+  overflow: hidden;
+}
+
+.ai-initiatives::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--gradient-primary);
+}
+
+[data-theme="dark"] .ai-initiatives {
+  background: var(--surface-color);
+  border-color: var(--border-color);
 }
 
 .ai-initiatives h2 {
@@ -174,6 +196,15 @@
   margin-top: 2rem;
 }
 
+.initiatives-container {
+  padding: 4rem 2rem;
+  background: linear-gradient(to bottom, rgba(248, 250, 252, 0.5), rgba(255, 255, 255, 0.8));
+}
+
+[data-theme="dark"] .initiatives-container {
+  background: linear-gradient(to bottom, rgba(15, 23, 42, 0.5), rgba(30, 41, 59, 0.8));
+}
+
 /* Status Sections for Home Page */
 .all-initiatives {
   margin-top: 3rem;
@@ -181,6 +212,16 @@
 
 .status-section {
   margin-bottom: 4rem;
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: var(--border-radius);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  backdrop-filter: blur(8px);
+}
+
+[data-theme="dark"] .status-section {
+  background: rgba(30, 41, 59, 0.6);
+  border-color: rgba(51, 65, 85, 0.8);
 }
 
 .status-section-title {

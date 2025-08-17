@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { itemApi } from '../services/api';
 import { Item } from '../types';
+import { getAvailableQuarters, parseQuarterValue } from '../utils/quarters';
 import Tag from '../components/Tag';
 
 const QuarterView: React.FC = () => {
@@ -39,6 +40,16 @@ const QuarterView: React.FC = () => {
   if (error) return <div className="error-message">{error}</div>;
   if (!data) return <div className="error">Quarter data not found</div>;
 
+  // Parse the current quarter to get proper formatting
+  let currentQuarterLabel = data.quarter;
+  try {
+    const parsedQuarter = parseQuarterValue(data.quarter);
+    currentQuarterLabel = parsedQuarter.label;
+  } catch {
+    // If parsing fails, use the original value
+    currentQuarterLabel = data.quarter;
+  }
+
   const statusGroups = {
     planned: data.items.filter(item => item.status === 'planned'),
     'in-progress': data.items.filter(item => item.status === 'in-progress'),
@@ -52,44 +63,29 @@ const QuarterView: React.FC = () => {
         <div className="breadcrumb">
           <Link to={`/roadmap/${slug}`}>{data.roadmap.title}</Link>
           <span> / </span>
-          <span>{data.quarter}</span>
+          <span>{currentQuarterLabel}</span>
         </div>
-        <h1>{data.quarter} - {data.roadmap.title}</h1>
+        <h1>{currentQuarterLabel} - {data.roadmap.title}</h1>
         <p>{data.roadmap.description}</p>
       </div>
 
       <div className="quarter-navigation">
         <div className="quarter-links">
-          <Link 
-            to={`/roadmap/${slug}/q1`} 
-            className={`quarter-link ${quarter?.toLowerCase() === 'q1' ? 'active' : ''}`}
-          >
-            Q1
-          </Link>
-          <Link 
-            to={`/roadmap/${slug}/q2`} 
-            className={`quarter-link ${quarter?.toLowerCase() === 'q2' ? 'active' : ''}`}
-          >
-            Q2
-          </Link>
-          <Link 
-            to={`/roadmap/${slug}/q3`} 
-            className={`quarter-link ${quarter?.toLowerCase() === 'q3' ? 'active' : ''}`}
-          >
-            Q3
-          </Link>
-          <Link 
-            to={`/roadmap/${slug}/q4`} 
-            className={`quarter-link ${quarter?.toLowerCase() === 'q4' ? 'active' : ''}`}
-          >
-            Q4
-          </Link>
+          {getAvailableQuarters().map((availableQuarter) => (
+            <Link 
+              key={availableQuarter.value}
+              to={`/roadmap/${slug}/${availableQuarter.value.toLowerCase()}`} 
+              className={`quarter-link ${quarter?.toLowerCase() === availableQuarter.value.toLowerCase() ? 'active' : ''}`}
+            >
+              {availableQuarter.label}
+            </Link>
+          ))}
         </div>
       </div>
 
       {data.items.length === 0 ? (
         <div className="no-items">
-          <h2>No items planned for {data.quarter}</h2>
+          <h2>No items planned for {currentQuarterLabel}</h2>
           <p>This quarter doesn't have any roadmap items yet.</p>
         </div>
       ) : (

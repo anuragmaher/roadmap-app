@@ -137,8 +137,9 @@ const Home: React.FC = () => {
         </div>
       </div>
 
-      <div className="ai-initiatives">
-        <h2>AI Initiatives & Features</h2>
+      <section className="initiatives-container">
+        <div className="ai-initiatives">
+          <h2>AI Initiatives & Features</h2>
         {error && <div className="error-message">{error}</div>}
         
         {allItems.length === 0 ? (
@@ -166,7 +167,8 @@ const Home: React.FC = () => {
             {renderItemsSection('📋 Planned', plannedItems, 'planned')}
           </div>
         )}
-      </div>
+        </div>
+      </section>
     </div>
   );
 };
