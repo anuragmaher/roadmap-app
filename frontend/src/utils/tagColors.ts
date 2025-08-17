@@ -104,7 +104,7 @@ export const getTagCSSProperties = (tagName: string, isDark: boolean = false): R
   return {
     '--tag-bg': colors.background,
     '--tag-text': colors.text,
-    '--tag-border': colors.border,
+    '--tag-border': colors.border
   } as React.CSSProperties;
 };
 

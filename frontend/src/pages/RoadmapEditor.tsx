@@ -4,7 +4,6 @@ import { roadmapApi, itemApi } from '../services/api';
 import { Roadmap, Item } from '../types';
 import { getAvailableQuarters, itemBelongsToQuarter } from '../utils/quarters';
 import { useApi } from '../hooks/useApi';
-import { handleApiError } from '../utils/errorHandler';
 import Modal from '../components/Modal';
 import ItemForm from '../components/ItemForm';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -154,14 +153,12 @@ const RoadmapEditor: React.FC = () => {
                       onClick={() => startEditItem(item)}
                       className="edit-btn"
                       title="Edit item"
-                    >
-                    </button>
+                     />
                     <button 
                       onClick={() => handleDeleteItem(item._id)}
                       className="delete-btn"
                       title="Delete item"
-                    >
-                    </button>
+                     />
                   </div>
                 </div>
               ))}

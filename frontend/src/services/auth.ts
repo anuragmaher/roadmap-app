@@ -11,11 +11,11 @@ if (API_BASE_URL.endsWith('/')) {
 
 // If the URL doesn't already include /api, add it
 if (!API_BASE_URL.includes('/api')) {
-  API_BASE_URL = API_BASE_URL + '/api';
+  API_BASE_URL = `${API_BASE_URL  }/api`;
 }
 
 const api = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: API_BASE_URL
 });
 
 export const setAuthToken = (token: string | null) => {

@@ -13,7 +13,6 @@ const Home: React.FC = () => {
     const fetchPublicRoadmapsAndItems = async () => {
       try {
         const roadmapsData = await roadmapApi.getPublic();
-        console.log('API response:', roadmapsData); // Debug log
         
         // Ensure data is an array
         if (Array.isArray(roadmapsData)) {
