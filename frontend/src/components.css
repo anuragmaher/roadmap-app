@@ -1723,6 +1723,12 @@
   .items-half-row-grid {
     grid-template-columns: 1fr;
     gap: 1rem;
+    width: 100%;
+  }
+  
+  .roadmap-item-card {
+    width: 100%;
+    margin: 0;
   }
   
   .highlight-card {
@@ -1767,5 +1773,75 @@
   
   .quarter-stats {
     grid-template-columns: repeat(2, 1fr);
+  }
+  
+  /* Ensure full width on mobile */
+  .status-section {
+    margin: 0;
+    padding: 1rem;
+  }
+  
+  .items-half-row-grid .roadmap-item-card {
+    min-width: 100%;
+    max-width: 100%;
+  }
+  
+  /* Force full width for all containers on mobile */
+  .home,
+  .ai-initiatives,
+  .initiatives-container,
+  .all-initiatives {
+    padding-left: 1rem;
+    padding-right: 1rem;
+    max-width: 100%;
+  }
+  
+  .ai-initiatives {
+    margin: 0;
+    border-radius: 0;
+  }
+  
+  .status-section {
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 0.5rem;
+    margin-bottom: 2rem;
+  }
+  
+  [data-theme="dark"] .status-section {
+    background: rgba(30, 41, 59, 0.6);
+  }
+  
+  /* Override any max-width constraints on mobile */
+  .ai-initiatives {
+    max-width: none !important;
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+    margin-right: calc(-50vw + 50%);
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  
+  /* Make status sections full width on mobile */
+  .status-section {
+    width: calc(100vw - 2rem);
+    margin-left: calc(-50vw + 50% + 1rem);
+    margin-right: calc(-50vw + 50% + 1rem);
+    padding: 1rem;
+    border-radius: 0.5rem;
+    margin-bottom: 2rem;
+  }
+  
+  /* Ensure grid items take full available width */
+  .items-half-row-grid {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+  
+  /* Make individual cards fit properly */
+  .roadmap-item-card {
+    width: 100%;
+    margin: 0;
+    box-sizing: border-box;
   }
 }
