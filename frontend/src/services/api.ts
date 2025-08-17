@@ -58,3 +58,30 @@ export const itemApi = {
     await api.delete(`/items/${itemId}`);
   }
 };
+
+export const voteApi = {
+  vote: async (itemId: string, email: string): Promise<{ message: string; voteCount: number; isHighDemand: boolean }> => {
+    const response = await api.post(`/votes/items/${itemId}/vote`, { email });
+    return response.data;
+  },
+
+  removeVote: async (itemId: string, email: string): Promise<{ message: string; voteCount: number; isHighDemand: boolean }> => {
+    const response = await api.delete(`/votes/items/${itemId}/vote`, { data: { email } });
+    return response.data;
+  },
+
+  getVotes: async (itemId: string): Promise<{ voteCount: number; isHighDemand: boolean }> => {
+    const response = await api.get(`/votes/items/${itemId}/votes`);
+    return response.data;
+  },
+
+  checkUserVote: async (itemId: string, email: string): Promise<{ hasVoted: boolean }> => {
+    const response = await api.get(`/votes/items/${itemId}/vote/check?email=${encodeURIComponent(email)}`);
+    return response.data;
+  },
+
+  notifyVoters: async (itemId: string): Promise<{ message: string; emails: string[] }> => {
+    const response = await api.post(`/votes/items/${itemId}/notify-voters`);
+    return response.data;
+  }
+};

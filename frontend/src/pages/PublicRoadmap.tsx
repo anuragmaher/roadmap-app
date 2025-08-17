@@ -4,6 +4,7 @@ import { roadmapApi } from '../services/api';
 import { Roadmap } from '../types';
 import { getAvailableQuarters, parseQuarterValue, itemBelongsToQuarter } from '../utils/quarters';
 import Tag from '../components/Tag';
+import VoteButton from '../components/VoteButton';
 
 const PublicRoadmap: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -161,6 +162,7 @@ const PublicRoadmap: React.FC = () => {
                           )}
                         </div>
                       )}
+                      <VoteButton itemId={item._id} itemStatus={item.status} />
                     </div>
                   ))}
                 </div>

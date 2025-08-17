@@ -9,6 +9,7 @@ import ItemForm from '../components/ItemForm';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorMessage from '../components/ErrorMessage';
 import Tag from '../components/Tag';
+import VoteButton from '../components/VoteButton';
 
 const RoadmapEditor: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -174,6 +175,7 @@ const RoadmapEditor: React.FC = () => {
                       )}
                     </div>
                   )}
+                  <VoteButton itemId={item._id} itemStatus={item.status} />
                   <div className="item-actions">
                     <button 
                       onClick={() => startEditItem(item)}

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { roadmapApi, itemApi } from '../services/api';
 import { Item } from '../types';
 import Tag from '../components/Tag';
+import VoteButton from '../components/VoteButton';
 
 const Home: React.FC = () => {
   const [allItems, setAllItems] = useState<Item[]>([]);
@@ -139,6 +140,7 @@ const Home: React.FC = () => {
                   )}
                 </div>
               )}
+              <VoteButton itemId={item._id} itemStatus={item.status} />
             </div>
           ))}
         </div>
