@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { voteApi } from '../services/api';
 
 interface VoteButtonProps {
@@ -14,29 +14,29 @@ const VoteButton: React.FC<VoteButtonProps> = ({ itemId, itemStatus }) => {
   const [showEmailInput, setShowEmailInput] = useState(false);
   const [error, setError] = useState('');
 
-  const loadVoteData = async () => {
+  const loadVoteData = useCallback(async () => {
     try {
       const voteData = await voteApi.getVotes(itemId);
       setIsHighDemand(voteData.isHighDemand);
     } catch (error) {
       console.error('Failed to load vote data:', error);
     }
-  };
+  }, [itemId]);
 
-  const checkUserVote = async (userEmail: string) => {
+  const checkUserVote = useCallback(async (userEmail: string) => {
     try {
       const { hasVoted: voted } = await voteApi.checkUserVote(itemId, userEmail);
       setHasVoted(voted);
     } catch (error) {
       console.error('Failed to check user vote:', error);
     }
-  };
+  }, [itemId]);
 
   useEffect(() => {
     if (itemStatus !== 'completed') {
       loadVoteData();
     }
-  }, [itemId, itemStatus]);
+  }, [itemId, itemStatus, loadVoteData]);
 
   useEffect(() => {
     if (itemStatus !== 'completed') {
@@ -52,7 +52,7 @@ const VoteButton: React.FC<VoteButtonProps> = ({ itemId, itemStatus }) => {
         setHasVoted(true);
       }
     }
-  }, [itemId, itemStatus]);
+  }, [itemId, itemStatus, checkUserVote]);
 
   // Don't show voting for completed items
   if (itemStatus === 'completed') {
@@ -149,7 +149,7 @@ const VoteButton: React.FC<VoteButtonProps> = ({ itemId, itemStatus }) => {
           onClick={hasVoted ? handleVote : () => setShowEmailInput(true)}
           className={`vote-btn-icon ${hasVoted ? 'voted' : 'primary'}`}
           disabled={loading}
-          title={hasVoted ? "You'll be notified when ready" : "Get notified when ready"}
+          title={hasVoted ? 'You\'ll be notified when ready' : 'Get notified when ready'}
         >
           {loading ? (
             <span className="loading-spinner">⏳</span>
@@ -159,7 +159,7 @@ const VoteButton: React.FC<VoteButtonProps> = ({ itemId, itemStatus }) => {
             <span className="vote-icon">🔔</span>
           )}
           <span className="vote-text">
-            {hasVoted ? "You'll be notified" : "Notify me"}
+            {hasVoted ? 'You\'ll be notified' : 'Notify me'}
           </span>
         </button>
       )}
