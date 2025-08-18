@@ -38,7 +38,43 @@ const tenantSchema = new mongoose.Schema({
   settings: {
     customDomain: {
       type: String,
+      default: null,
+      validate: {
+        validator: function(v) {
+          if (!v) return true;
+          // Basic domain validation
+          return /^[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)*$/.test(v);
+        },
+        message: 'Invalid domain format'
+      }
+    },
+    logo: {
+      type: String,
       default: null
+    },
+    favicon: {
+      type: String,
+      default: null
+    },
+    primaryColor: {
+      type: String,
+      default: '#3b82f6',
+      validate: {
+        validator: function(v) {
+          return /^#[0-9a-fA-F]{6}$/.test(v);
+        },
+        message: 'Primary color must be a valid hex color'
+      }
+    },
+    secondaryColor: {
+      type: String,
+      default: '#64748b',
+      validate: {
+        validator: function(v) {
+          return /^#[0-9a-fA-F]{6}$/.test(v);
+        },
+        message: 'Secondary color must be a valid hex color'
+      }
     },
     theme: {
       type: String,
@@ -52,6 +88,29 @@ const tenantSchema = new mongoose.Schema({
     emailNotifications: {
       type: Boolean,
       default: true
+    },
+    customCSS: {
+      type: String,
+      default: null
+    },
+    contactEmail: {
+      type: String,
+      default: null,
+      validate: {
+        validator: function(v) {
+          if (!v) return true;
+          return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+        },
+        message: 'Invalid email format'
+      }
+    },
+    supportUrl: {
+      type: String,
+      default: null
+    },
+    timezone: {
+      type: String,
+      default: 'UTC'
     }
   },
   limits: {
@@ -86,8 +145,9 @@ const tenantSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Index for fast subdomain lookups
+// Indexes for fast lookups
 tenantSchema.index({ subdomain: 1 });
 tenantSchema.index({ status: 1 });
+tenantSchema.index({ 'settings.customDomain': 1 });
 
 module.exports = mongoose.model('Tenant', tenantSchema);

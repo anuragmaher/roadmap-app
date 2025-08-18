@@ -43,6 +43,9 @@ const Navbar: React.FC = () => {
           {user ? (
             <div className="nav-user">
               <Link to="/dashboard" className="nav-link">Dashboard</Link>
+              <Link to="/tenant-settings" className="nav-link settings-link" title="Tenant Settings">
+                ⚙️
+              </Link>
               <span className="user-email">{user.email}</span>
               <button onClick={handleLogout} className="logout-btn">
                 Logout

@@ -10,6 +10,7 @@ import Dashboard from './pages/Dashboard';
 import RoadmapEditor from './pages/RoadmapEditor';
 import PublicRoadmap from './pages/PublicRoadmap';
 import QuarterView from './pages/QuarterView';
+import TenantSettings from './pages/TenantSettings';
 import ProtectedRoute from './components/ProtectedRoute';
 import './App.css';
 import './components.css';
@@ -30,6 +31,11 @@ function App() {
                 <Route path="/dashboard" element={
                   <ProtectedRoute>
                     <Dashboard />
+                  </ProtectedRoute>
+                } />
+                <Route path="/tenant-settings" element={
+                  <ProtectedRoute>
+                    <TenantSettings />
                   </ProtectedRoute>
                 } />
                 <Route path="/roadmap/:slug/edit" element={

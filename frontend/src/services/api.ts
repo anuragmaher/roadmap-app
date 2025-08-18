@@ -85,3 +85,25 @@ export const voteApi = {
     return response.data;
   }
 };
+
+export const tenantApi = {
+  getSettings: async () => {
+    const response = await api.get('/tenant/settings');
+    return response.data;
+  },
+
+  updateSettings: async (settings: any) => {
+    const response = await api.put('/tenant/settings', settings);
+    return response.data;
+  },
+
+  getInfo: async () => {
+    const response = await api.get('/tenant/info');
+    return response.data;
+  },
+
+  checkDomainAvailability: async (domain: string, type: 'custom' | 'subdomain' = 'custom') => {
+    const response = await api.post('/tenant/check-domain', { domain, type });
+    return response.data;
+  }
+};
