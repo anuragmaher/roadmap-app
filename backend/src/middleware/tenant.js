@@ -19,8 +19,8 @@ const resolveTenant = async (req, res, next) => {
       if (parts.length >= 3) {
         subdomain = parts[0];
       } else {
-        // If no subdomain, default to hiver
-        subdomain = 'hiver';
+        // If no subdomain, use environment variable or default to hiver
+        subdomain = process.env.DEFAULT_TENANT || 'hiver';
       }
     }
 
