@@ -19,11 +19,11 @@ const createRoadmap = async (req, res) => {
     const { title, description, isPublic = true } = req.body;
     let slug = generateSlug(title);
     
-    let existingRoadmap = await Roadmap.findOne({ slug });
+    let existingRoadmap = await Roadmap.findOne({ slug, tenant: req.tenantId });
     let counter = 1;
     while (existingRoadmap) {
       slug = `${generateSlug(title)}-${counter}`;
-      existingRoadmap = await Roadmap.findOne({ slug });
+      existingRoadmap = await Roadmap.findOne({ slug, tenant: req.tenantId });
       counter++;
     }
 
@@ -31,6 +31,7 @@ const createRoadmap = async (req, res) => {
       title,
       description,
       owner: req.user._id,
+      tenant: req.tenantId,
       isPublic,
       slug
     });
@@ -47,7 +48,7 @@ const createRoadmap = async (req, res) => {
 
 const getRoadmaps = async (req, res) => {
   try {
-    const roadmaps = await Roadmap.find({ owner: req.user._id })
+    const roadmaps = await Roadmap.find({ owner: req.user._id, tenant: req.tenantId })
       .populate('owner', 'email')
       .sort({ createdAt: -1 });
 
@@ -61,7 +62,7 @@ const getRoadmaps = async (req, res) => {
 const getRoadmapBySlug = async (req, res) => {
   try {
     const { slug } = req.params;
-    const roadmap = await Roadmap.findOne({ slug })
+    const roadmap = await Roadmap.findOne({ slug, tenant: req.tenantId })
       .populate('owner', 'email');
 
     if (!roadmap) {
@@ -72,7 +73,7 @@ const getRoadmapBySlug = async (req, res) => {
       return res.status(403).json({ message: 'Access denied' });
     }
 
-    const items = await Item.find({ roadmap: roadmap._id }).sort({ order: 1, createdAt: 1 });
+    const items = await Item.find({ roadmap: roadmap._id, tenant: req.tenantId }).sort({ order: 1, createdAt: 1 });
     
     res.json({
       ...roadmap.toJSON(),
@@ -94,7 +95,7 @@ const updateRoadmap = async (req, res) => {
     const { slug } = req.params;
     const { title, description, isPublic } = req.body;
 
-    const roadmap = await Roadmap.findOne({ slug });
+    const roadmap = await Roadmap.findOne({ slug, tenant: req.tenantId });
     
     if (!roadmap) {
       return res.status(404).json({ message: 'Roadmap not found' });
@@ -106,11 +107,11 @@ const updateRoadmap = async (req, res) => {
 
     if (title && title !== roadmap.title) {
       let newSlug = generateSlug(title);
-      let existingRoadmap = await Roadmap.findOne({ slug: newSlug });
+      let existingRoadmap = await Roadmap.findOne({ slug: newSlug, tenant: req.tenantId });
       let counter = 1;
       while (existingRoadmap && existingRoadmap._id.toString() !== roadmap._id.toString()) {
         newSlug = `${generateSlug(title)}-${counter}`;
-        existingRoadmap = await Roadmap.findOne({ slug: newSlug });
+        existingRoadmap = await Roadmap.findOne({ slug: newSlug, tenant: req.tenantId });
         counter++;
       }
       roadmap.slug = newSlug;
@@ -134,7 +135,7 @@ const deleteRoadmap = async (req, res) => {
   try {
     const { slug } = req.params;
     
-    const roadmap = await Roadmap.findOne({ slug });
+    const roadmap = await Roadmap.findOne({ slug, tenant: req.tenantId });
     
     if (!roadmap) {
       return res.status(404).json({ message: 'Roadmap not found' });
@@ -144,7 +145,7 @@ const deleteRoadmap = async (req, res) => {
       return res.status(403).json({ message: 'Access denied' });
     }
 
-    await Item.deleteMany({ roadmap: roadmap._id });
+    await Item.deleteMany({ roadmap: roadmap._id, tenant: req.tenantId });
     await Roadmap.findByIdAndDelete(roadmap._id);
 
     res.json({ message: 'Roadmap deleted successfully' });
@@ -156,7 +157,7 @@ const deleteRoadmap = async (req, res) => {
 
 const getPublicRoadmaps = async (req, res) => {
   try {
-    const roadmaps = await Roadmap.find({ isPublic: true })
+    const roadmaps = await Roadmap.find({ isPublic: true, tenant: req.tenantId })
       .populate('owner', 'email')
       .sort({ createdAt: -1 });
 

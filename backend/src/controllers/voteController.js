@@ -12,7 +12,7 @@ const createVote = async (req, res) => {
     const { email } = req.body;
 
     // Check if item exists
-    const item = await Item.findById(itemId);
+    const item = await Item.findOne({ _id: itemId, tenant: req.tenantId });
     if (!item) {
       return res.status(404).json({ message: 'Item not found' });
     }
@@ -23,7 +23,7 @@ const createVote = async (req, res) => {
     }
 
     // Check if user already voted
-    const existingVote = await Vote.findOne({ email, item: itemId });
+    const existingVote = await Vote.findOne({ email, item: itemId, tenant: req.tenantId });
     if (existingVote) {
       return res.status(400).json({ message: 'You have already voted for this item' });
     }
@@ -31,13 +31,14 @@ const createVote = async (req, res) => {
     // Create new vote
     const vote = new Vote({
       email,
-      item: itemId
+      item: itemId,
+      tenant: req.tenantId
     });
 
     await vote.save();
 
     // Get updated vote count
-    const voteCount = await Vote.countDocuments({ item: itemId });
+    const voteCount = await Vote.countDocuments({ item: itemId, tenant: req.tenantId });
     const isHighDemand = voteCount > 5;
 
     res.status(201).json({ 
@@ -59,13 +60,13 @@ const removeVote = async (req, res) => {
     const { itemId } = req.params;
     const { email } = req.body;
 
-    const vote = await Vote.findOneAndDelete({ email, item: itemId });
+    const vote = await Vote.findOneAndDelete({ email, item: itemId, tenant: req.tenantId });
     if (!vote) {
       return res.status(404).json({ message: 'Vote not found' });
     }
 
     // Get updated vote count
-    const voteCount = await Vote.countDocuments({ item: itemId });
+    const voteCount = await Vote.countDocuments({ item: itemId, tenant: req.tenantId });
     const isHighDemand = voteCount > 5;
 
     res.json({ 
@@ -83,7 +84,7 @@ const getItemVotes = async (req, res) => {
   try {
     const { itemId } = req.params;
 
-    const voteCount = await Vote.countDocuments({ item: itemId });
+    const voteCount = await Vote.countDocuments({ item: itemId, tenant: req.tenantId });
     const isHighDemand = voteCount > 5;
 
     res.json({
@@ -105,7 +106,7 @@ const checkUserVote = async (req, res) => {
       return res.status(400).json({ message: 'Email is required' });
     }
 
-    const vote = await Vote.findOne({ email, item: itemId });
+    const vote = await Vote.findOne({ email, item: itemId, tenant: req.tenantId });
     
     res.json({
       hasVoted: !!vote
@@ -121,7 +122,7 @@ const notifyVoters = async (req, res) => {
     const { itemId } = req.params;
 
     // Check if item exists and is completed
-    const item = await Item.findById(itemId);
+    const item = await Item.findOne({ _id: itemId, tenant: req.tenantId });
     if (!item) {
       return res.status(404).json({ message: 'Item not found' });
     }
@@ -131,11 +132,11 @@ const notifyVoters = async (req, res) => {
     }
 
     // Get all voters who haven't been notified
-    const votes = await Vote.find({ item: itemId, notified: false });
+    const votes = await Vote.find({ item: itemId, notified: false, tenant: req.tenantId });
     
     // Mark all votes as notified
     await Vote.updateMany(
-      { item: itemId, notified: false },
+      { item: itemId, notified: false, tenant: req.tenantId },
       { notified: true }
     );
 

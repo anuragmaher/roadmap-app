@@ -9,6 +9,7 @@ const {
   getPublicRoadmaps
 } = require('../controllers/roadmapController');
 const auth = require('../middleware/auth');
+const { resolveTenant } = require('../middleware/tenant');
 
 const router = express.Router();
 
@@ -20,24 +21,24 @@ const optionalAuth = (req, res, next) => {
   next();
 };
 
-router.get('/public', getPublicRoadmaps);
+router.get('/public', resolveTenant, getPublicRoadmaps);
 
-router.get('/', auth, getRoadmaps);
+router.get('/', resolveTenant, auth, getRoadmaps);
 
-router.post('/', auth, [
+router.post('/', resolveTenant, auth, [
   body('title').trim().isLength({ min: 1 }).withMessage('Title is required'),
   body('description').optional().trim(),
   body('isPublic').optional().isBoolean()
 ], createRoadmap);
 
-router.get('/:slug', optionalAuth, getRoadmapBySlug);
+router.get('/:slug', resolveTenant, optionalAuth, getRoadmapBySlug);
 
-router.put('/:slug', auth, [
+router.put('/:slug', resolveTenant, auth, [
   body('title').optional().trim().isLength({ min: 1 }),
   body('description').optional().trim(),
   body('isPublic').optional().isBoolean()
 ], updateRoadmap);
 
-router.delete('/:slug', auth, deleteRoadmap);
+router.delete('/:slug', resolveTenant, auth, deleteRoadmap);
 
 module.exports = router;

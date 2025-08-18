@@ -18,6 +18,11 @@ const voteSchema = new mongoose.Schema({
     ref: 'Item',
     required: true
   },
+  tenant: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Tenant',
+    required: true
+  },
   notified: {
     type: Boolean,
     default: false
@@ -26,7 +31,8 @@ const voteSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Ensure one vote per email per item
-voteSchema.index({ email: 1, item: 1 }, { unique: true });
+// Ensure one vote per email per item per tenant
+voteSchema.index({ email: 1, item: 1, tenant: 1 }, { unique: true });
+voteSchema.index({ tenant: 1 });
 
 module.exports = mongoose.model('Vote', voteSchema);

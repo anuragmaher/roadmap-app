@@ -7,6 +7,7 @@ const authRoutes = require('./routes/auth');
 const roadmapRoutes = require('./routes/roadmaps');
 const itemRoutes = require('./routes/items');
 const voteRoutes = require('./routes/votes');
+const subdomainRoutes = require('./routes/subdomain');
 
 const app = express();
 
@@ -30,6 +31,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/roadmaps', roadmapRoutes);
 app.use('/api/items', itemRoutes);
 app.use('/api/votes', voteRoutes);
+app.use('/api/subdomain', subdomainRoutes);
 
 // Setup for both local development and Vercel deployment
 const PORT = process.env.PORT || 5001;

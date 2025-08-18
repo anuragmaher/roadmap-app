@@ -15,6 +15,11 @@ const roadmapSchema = new mongoose.Schema({
     ref: 'User',
     required: true
   },
+  tenant: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Tenant',
+    required: true
+  },
   isPublic: {
     type: Boolean,
     default: true
@@ -22,7 +27,6 @@ const roadmapSchema = new mongoose.Schema({
   slug: {
     type: String,
     required: true,
-    unique: true,
     lowercase: true,
     trim: true
   }
@@ -38,5 +42,9 @@ roadmapSchema.virtual('items', {
 
 roadmapSchema.set('toJSON', { virtuals: true });
 roadmapSchema.set('toObject', { virtuals: true });
+
+// Compound index for slug uniqueness per tenant
+roadmapSchema.index({ slug: 1, tenant: 1 }, { unique: true });
+roadmapSchema.index({ tenant: 1 });
 
 module.exports = mongoose.model('Roadmap', roadmapSchema);

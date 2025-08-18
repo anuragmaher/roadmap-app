@@ -16,6 +16,11 @@ const auth = async (req, res, next) => {
       return res.status(401).json({ message: 'Token is not valid' });
     }
 
+    // Verify tenant matches (if tenantId exists in token)
+    if (decoded.tenantId && req.tenantId && decoded.tenantId !== req.tenantId.toString()) {
+      return res.status(403).json({ message: 'Access denied - tenant mismatch' });
+    }
+
     req.user = user;
     next();
   } catch (error) {

@@ -5,7 +5,6 @@ const userSchema = new mongoose.Schema({
   email: {
     type: String,
     required: true,
-    unique: true,
     lowercase: true,
     trim: true
   },
@@ -13,6 +12,16 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
     minlength: 6
+  },
+  tenant: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Tenant',
+    required: true
+  },
+  role: {
+    type: String,
+    enum: ['owner', 'admin', 'member'],
+    default: 'owner'
   }
 }, {
   timestamps: true
@@ -27,5 +36,8 @@ userSchema.pre('save', async function(next) {
 userSchema.methods.comparePassword = async function(candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);
 };
+
+// Compound index for email uniqueness per tenant
+userSchema.index({ email: 1, tenant: 1 }, { unique: true });
 
 module.exports = mongoose.model('User', userSchema);

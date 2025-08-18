@@ -31,8 +31,13 @@ export const login = async (email: string, password: string): Promise<AuthRespon
   return response.data;
 };
 
-export const register = async (email: string, password: string): Promise<AuthResponse> => {
-  const response = await api.post('/auth/register', { email, password });
+export const register = async (email: string, password: string, companyName: string, companySize: string): Promise<AuthResponse> => {
+  const response = await api.post('/auth/register', { email, password, companyName, companySize });
+  return response.data;
+};
+
+export const checkSubdomainAvailability = async (companyName: string) => {
+  const response = await api.post('/subdomain/check-availability', { companyName });
   return response.data;
 };
 

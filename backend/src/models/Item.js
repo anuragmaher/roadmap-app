@@ -35,6 +35,11 @@ const itemSchema = new mongoose.Schema({
     ref: 'Roadmap',
     required: true
   },
+  tenant: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Tenant',
+    required: true
+  },
   order: {
     type: Number,
     default: 0
@@ -54,5 +59,9 @@ const itemSchema = new mongoose.Schema({
 }, {
   timestamps: true
 });
+
+// Index for tenant-scoped queries
+itemSchema.index({ tenant: 1 });
+itemSchema.index({ roadmap: 1, tenant: 1 });
 
 module.exports = mongoose.model('Item', itemSchema);

@@ -11,7 +11,7 @@ const createItem = async (req, res) => {
     const { roadmapId } = req.params;
     const { title, description, quarter, tags, status, order, image, prdLink, figmaLink } = req.body;
 
-    const roadmap = await Roadmap.findById(roadmapId);
+    const roadmap = await Roadmap.findOne({ _id: roadmapId, tenant: req.tenantId });
     if (!roadmap) {
       return res.status(404).json({ message: 'Roadmap not found' });
     }
@@ -27,6 +27,7 @@ const createItem = async (req, res) => {
       tags: tags || [],
       status: status || 'planned',
       roadmap: roadmapId,
+      tenant: req.tenantId,
       order: order || 0,
       image: image || null,
       prdLink: prdLink || null,
@@ -53,12 +54,12 @@ const getItems = async (req, res) => {
     const { roadmapId } = req.params;
     const { quarter } = req.query;
 
-    const roadmap = await Roadmap.findById(roadmapId);
+    const roadmap = await Roadmap.findOne({ _id: roadmapId, tenant: req.tenantId });
     if (!roadmap) {
       return res.status(404).json({ message: 'Roadmap not found' });
     }
 
-    let query = { roadmap: roadmapId };
+    let query = { roadmap: roadmapId, tenant: req.tenantId };
     if (quarter) {
       query.quarter = quarter;
     }
@@ -81,7 +82,7 @@ const updateItem = async (req, res) => {
     const { itemId } = req.params;
     const { title, description, quarter, tags, status, order, image, prdLink, figmaLink } = req.body;
 
-    const item = await Item.findById(itemId).populate('roadmap');
+    const item = await Item.findOne({ _id: itemId, tenant: req.tenantId }).populate('roadmap');
     if (!item) {
       return res.status(404).json({ message: 'Item not found' });
     }
@@ -112,7 +113,7 @@ const deleteItem = async (req, res) => {
   try {
     const { itemId } = req.params;
 
-    const item = await Item.findById(itemId).populate('roadmap');
+    const item = await Item.findOne({ _id: itemId, tenant: req.tenantId }).populate('roadmap');
     if (!item) {
       return res.status(404).json({ message: 'Item not found' });
     }
@@ -121,7 +122,7 @@ const deleteItem = async (req, res) => {
       return res.status(403).json({ message: 'Access denied' });
     }
 
-    await Item.findByIdAndDelete(itemId);
+    await Item.findOneAndDelete({ _id: itemId, tenant: req.tenantId });
     res.json({ message: 'Item deleted successfully' });
   } catch (error) {
     console.error(error);
@@ -133,7 +134,7 @@ const getItemsByQuarter = async (req, res) => {
   try {
     const { roadmapSlug, quarter } = req.params;
 
-    const roadmap = await Roadmap.findOne({ slug: roadmapSlug });
+    const roadmap = await Roadmap.findOne({ slug: roadmapSlug, tenant: req.tenantId });
     if (!roadmap) {
       return res.status(404).json({ message: 'Roadmap not found' });
     }
@@ -144,7 +145,8 @@ const getItemsByQuarter = async (req, res) => {
 
     const items = await Item.find({ 
       roadmap: roadmap._id, 
-      quarter: quarter.toUpperCase() 
+      quarter: quarter.toUpperCase(),
+      tenant: req.tenantId
     }).sort({ order: 1, createdAt: 1 });
 
     res.json({
