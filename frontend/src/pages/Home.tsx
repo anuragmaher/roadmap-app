@@ -9,6 +9,7 @@ const Home: React.FC = () => {
   const [allItems, setAllItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [firstRoadmapSlug, setFirstRoadmapSlug] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchPublicRoadmapsAndItems = async () => {
@@ -17,6 +18,10 @@ const Home: React.FC = () => {
         
         // Ensure data is an array
         if (Array.isArray(roadmapsData)) {
+          // Set the first roadmap slug for the CTA button
+          if (roadmapsData.length > 0) {
+            setFirstRoadmapSlug(roadmapsData[0].slug);
+          }
           
           // Fetch all items from all public roadmaps
           const itemsPromises = roadmapsData.map(async (roadmap) => {
@@ -157,7 +162,9 @@ const Home: React.FC = () => {
           <div className="hero-text">
             <h1>Hiver AI Roadmap</h1>
             <p>Explore our AI-powered initiatives and upcoming features for customer support excellence</p>
-            <Link to="/roadmap/hiver-ai" className="cta-btn">View Full Roadmap</Link>
+            {firstRoadmapSlug && (
+              <Link to={`/roadmap/${firstRoadmapSlug}`} className="cta-btn">View Full Roadmap</Link>
+            )}
           </div>
           <div className="hero-image">
             <img src="/hero-illustration.svg" alt="AI Roadmap Illustration" />
