@@ -13,6 +13,9 @@ const resolveTenant = async (req, res, next) => {
     } else if (hostname.includes('vercel.app') || hostname.includes('netlify.app')) {
       // For staging/preview deployments, use hiver as default
       subdomain = 'hiver';
+    } else if (hostname.includes('hiver-ai.com')) {
+      // For hiver-ai.com domain (both www.hiver-ai.com and hiver-ai.com), use hiver
+      subdomain = 'hiver';
     } else {
       // Extract subdomain from hostname (e.g., "customer.yourdomain.com" -> "customer")
       const parts = hostname.split('.');
