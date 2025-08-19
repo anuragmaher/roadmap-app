@@ -68,12 +68,40 @@ export const getTenantInfo = (): TenantInfo => {
     };
   }
   
-  // For unknown domains, assume they could be custom domains
-  // The API call will provide the correct information
+  // For unknown domains, check if they're likely custom domains
+  // Common patterns that indicate it's NOT the main forehq domain
+  if (!hostname.includes('forehq.com') && 
+      !hostname.includes('vercel.app') && 
+      !hostname.includes('netlify.app') &&
+      hostname !== 'localhost' && 
+      hostname !== '127.0.0.1') {
+    // This is likely a custom domain, assume it's a tenant
+    // For hiver-ai.com specifically, we know it's hiver
+    if (hostname === 'hiver-ai.com' || hostname === 'www.hiver-ai.com') {
+      return {
+        isMainDomain: false,
+        isSubdomain: false,
+        isCustomDomain: true,
+        subdomain: 'hiver',
+        hostname
+      };
+    }
+    
+    // For other custom domains, assume they're tenant domains
+    // The API call will provide the correct subdomain
+    return {
+      isMainDomain: false,
+      isSubdomain: false,
+      isCustomDomain: true,
+      subdomain: null, // Will be updated by API
+      hostname
+    };
+  }
+  
+  // Default to main domain for unknown cases
   return {
-    isMainDomain: false,
+    isMainDomain: true,
     isSubdomain: false,
-    isCustomDomain: true,
     subdomain: null,
     hostname
   };
@@ -133,6 +161,16 @@ export const getProductName = (tenantInfo?: TenantInfo): string => {
   // Return capitalized subdomain name for tenant branding
   if (tenant.subdomain) {
     return tenant.subdomain.charAt(0).toUpperCase() + tenant.subdomain.slice(1);
+  }
+  
+  // For custom domains without subdomain info yet, try to infer from hostname
+  if (tenant.isCustomDomain) {
+    // For known custom domains, return the expected brand name
+    if (tenant.hostname === 'hiver-ai.com' || tenant.hostname === 'www.hiver-ai.com') {
+      return 'Hiver';
+    }
+    // For unknown custom domains, show loading state
+    return '...'; // Will be updated when API call completes
   }
   
   return 'fore';
