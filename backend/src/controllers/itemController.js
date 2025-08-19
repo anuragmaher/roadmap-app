@@ -1,5 +1,6 @@
 const { validationResult } = require('express-validator');
 const { Item, Roadmap } = require('../models');
+const redisService = require('../services/redis');
 
 const createItem = async (req, res) => {
   try {
@@ -35,6 +36,10 @@ const createItem = async (req, res) => {
     });
 
     await item.save();
+    
+    // Invalidate home data cache for this tenant
+    await redisService.invalidateHomeData(req.tenantId);
+    
     res.status(201).json(item);
   } catch (error) {
     console.error('Create item error:', error);
@@ -102,6 +107,10 @@ const updateItem = async (req, res) => {
     if (figmaLink !== undefined) item.figmaLink = figmaLink;
 
     await item.save();
+    
+    // Invalidate home data cache for this tenant
+    await redisService.invalidateHomeData(req.tenantId);
+    
     res.json(item);
   } catch (error) {
     console.error(error);
@@ -123,6 +132,10 @@ const deleteItem = async (req, res) => {
     }
 
     await Item.findOneAndDelete({ _id: itemId, tenant: req.tenantId });
+    
+    // Invalidate home data cache for this tenant
+    await redisService.invalidateHomeData(req.tenantId);
+    
     res.json({ message: 'Item deleted successfully' });
   } catch (error) {
     console.error(error);

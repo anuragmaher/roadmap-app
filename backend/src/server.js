@@ -3,6 +3,8 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 require('dotenv').config();
 
+const redisService = require('./services/redis');
+
 const authRoutes = require('./routes/auth');
 const roadmapRoutes = require('./routes/roadmaps');
 const itemRoutes = require('./routes/items');
@@ -18,6 +20,20 @@ app.use(express.json());
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('Connected to MongoDB'))
   .catch(err => console.error('MongoDB connection error:', err));
+
+// Initialize Redis connection
+redisService.connect()
+  .then((connected) => {
+    if (connected) {
+      console.log('Redis service initialized successfully');
+    } else {
+      console.log('Redis service failed to initialize - continuing without cache');
+    }
+  })
+  .catch(err => {
+    console.error('Redis initialization error:', err);
+    console.log('Continuing without Redis cache');
+  });
 
 // Add a root route for serverless debugging
 app.get('/', (req, res) => {

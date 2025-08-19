@@ -20,64 +20,45 @@ const Home: React.FC = () => {
   const heroTitle = getHeroTitle(tenantInfo);
 
   useEffect(() => {
-    const fetchPublicRoadmapsAndItems = async () => {
+    const fetchHomeData = async () => {
       try {
-        // First, get the accurate tenant info from the API
-        const updatedTenantInfo = await getTenantInfoAsync();
+        // Use optimized endpoint that fetches all data in one call
+        const homeData = await roadmapApi.getHomeData();
+        
+        // Update tenant info from the response
+        const updatedTenantInfo = {
+          isMainDomain: homeData.tenant.domainInfo.isMainDomain,
+          isSubdomain: homeData.tenant.domainInfo.isSubdomain,
+          isCustomDomain: homeData.tenant.domainInfo.isCustomDomain,
+          subdomain: homeData.tenant.subdomain,
+          hostname: homeData.tenant.domainInfo.hostname
+        };
         setTenantInfo(updatedTenantInfo);
         
-        // Only fetch roadmap data if we're on a subdomain or custom domain (tenant)
-        if (updatedTenantInfo.isSubdomain || updatedTenantInfo.isCustomDomain) {
-          try {
-            const tenantData = await tenantApi.getInfo();
-            setTenantSettings(tenantData);
-          } catch (err) {
-            console.error('Failed to fetch tenant settings:', err);
-          }
-        }
+        // Set tenant settings
+        setTenantSettings(homeData.tenant);
         
-        // Only fetch roadmaps for subdomains and custom domains, not for main domain
-        if (!updatedTenantInfo.isMainDomain) {
-          const roadmapsData = await roadmapApi.getPublic();
+        // Set roadmap data
+        setFirstRoadmapSlug(homeData.firstRoadmapSlug);
+        setAllItems(homeData.items || []);
         
-          // Ensure data is an array
-          if (Array.isArray(roadmapsData)) {
-            // Set the first roadmap slug for the CTA button
-            if (roadmapsData.length > 0) {
-              setFirstRoadmapSlug(roadmapsData[0].slug);
-            }
-            
-            // Fetch all items from all public roadmaps
-            const itemsPromises = roadmapsData.map(async (roadmap) => {
-              try {
-                const items = await itemApi.getByRoadmap(roadmap._id);
-                return items.map(item => ({ ...item, roadmapTitle: roadmap.title, roadmapSlug: roadmap.slug }));
-              } catch (err) {
-                console.error(`Failed to fetch items for roadmap ${roadmap._id}:`, err);
-                return [];
-              }
-            });
-            
-            const allItemsArrays = await Promise.all(itemsPromises);
-            const flattenedItems = allItemsArrays.flat();
-            setAllItems(flattenedItems);
-          } else {
-            console.error('API did not return an array:', roadmapsData);
-            setError('Invalid response format from server');
-          }
-        } else {
-          // For main domain, don't fetch any roadmap data - show fore features
-          setAllItems([]);
-        }
       } catch (err: any) {
         console.error('API error:', err);
-        setError(`Failed to load roadmaps: ${err.response?.data?.message || err.message || 'Unknown error'}`);
+        setError(`Failed to load data: ${err.response?.data?.message || err.message || 'Unknown error'}`);
+        
+        // Fallback to client-side tenant detection if API fails
+        try {
+          const fallbackTenantInfo = await getTenantInfoAsync();
+          setTenantInfo(fallbackTenantInfo);
+        } catch (fallbackErr) {
+          console.error('Fallback tenant detection failed:', fallbackErr);
+        }
       } finally {
         setLoading(false);
       }
     };
 
-    fetchPublicRoadmapsAndItems();
+    fetchHomeData();
   }, []);
 
   // Function to sort items by quarter chronologically
@@ -181,7 +162,40 @@ const Home: React.FC = () => {
     );
   };
 
-  if (loading) return <div className="loading">Loading...</div>;
+  if (loading) {
+    return (
+      <div className="home">
+        <div className="hero">
+          <div className="hero-content">
+            <div className="hero-text">
+              <div className="skeleton skeleton-title" style={{width: '60%', height: '48px', marginBottom: '16px'}}></div>
+              <div className="skeleton skeleton-text" style={{width: '80%', height: '20px', marginBottom: '8px'}}></div>
+              <div className="skeleton skeleton-text" style={{width: '70%', height: '20px', marginBottom: '24px'}}></div>
+              <div className="skeleton skeleton-button" style={{width: '150px', height: '40px'}}></div>
+            </div>
+            <div className="hero-image">
+              <div className="skeleton skeleton-image" style={{width: '400px', height: '300px', borderRadius: '8px'}}></div>
+            </div>
+          </div>
+        </div>
+        <section className="initiatives-container">
+          <div className="ai-initiatives">
+            <div className="skeleton skeleton-title" style={{width: '40%', height: '32px', marginBottom: '32px'}}></div>
+            <div className="items-half-row-grid">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div key={i} className="roadmap-item-card skeleton-card">
+                  <div className="skeleton skeleton-text" style={{width: '70%', height: '24px', marginBottom: '12px'}}></div>
+                  <div className="skeleton skeleton-text" style={{width: '100%', height: '16px', marginBottom: '8px'}}></div>
+                  <div className="skeleton skeleton-text" style={{width: '80%', height: '16px', marginBottom: '16px'}}></div>
+                  <div className="skeleton skeleton-badge" style={{width: '80px', height: '24px'}}></div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      </div>
+    );
+  }
 
   return (
     <div className="home">

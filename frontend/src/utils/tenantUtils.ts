@@ -8,7 +8,7 @@ export interface TenantInfo {
   isCustomDomain?: boolean;
 }
 
-// Cache for tenant info to avoid multiple API calls
+// Lightweight cache for tenant info to avoid multiple API calls within the same page load
 let tenantInfoCache: TenantInfo | null = null;
 let tenantInfoPromise: Promise<TenantInfo> | null = null;
 

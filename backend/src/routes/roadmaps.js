@@ -6,7 +6,8 @@ const {
   getRoadmapBySlug,
   updateRoadmap,
   deleteRoadmap,
-  getPublicRoadmaps
+  getPublicRoadmaps,
+  getHomePageData
 } = require('../controllers/roadmapController');
 const auth = require('../middleware/auth');
 const { resolveTenant } = require('../middleware/tenant');
@@ -20,6 +21,8 @@ const optionalAuth = (req, res, next) => {
   }
   next();
 };
+
+router.get('/home-data', resolveTenant, getHomePageData);
 
 router.get('/public', resolveTenant, getPublicRoadmaps);
 

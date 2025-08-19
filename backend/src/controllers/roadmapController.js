@@ -1,5 +1,6 @@
 const { validationResult } = require('express-validator');
 const { Roadmap, Item } = require('../models');
+const redisService = require('../services/redis');
 
 const generateSlug = (title) => {
   return title.toLowerCase()
@@ -38,6 +39,9 @@ const createRoadmap = async (req, res) => {
 
     await roadmap.save();
     await roadmap.populate('owner', 'email');
+
+    // Invalidate home data cache for this tenant
+    await redisService.invalidateHomeData(req.tenantId);
 
     res.status(201).json(roadmap);
   } catch (error) {
@@ -124,6 +128,9 @@ const updateRoadmap = async (req, res) => {
     await roadmap.save();
     await roadmap.populate('owner', 'email');
 
+    // Invalidate home data cache for this tenant
+    await redisService.invalidateHomeData(req.tenantId);
+
     res.json(roadmap);
   } catch (error) {
     console.error(error);
@@ -147,6 +154,9 @@ const deleteRoadmap = async (req, res) => {
 
     await Item.deleteMany({ roadmap: roadmap._id, tenant: req.tenantId });
     await Roadmap.findByIdAndDelete(roadmap._id);
+
+    // Invalidate home data cache for this tenant
+    await redisService.invalidateHomeData(req.tenantId);
 
     res.json({ message: 'Roadmap deleted successfully' });
   } catch (error) {
@@ -173,11 +183,132 @@ const getPublicRoadmaps = async (req, res) => {
   }
 };
 
+// Optimized endpoint for home page - fetches all data in one call with Redis caching
+const getHomePageData = async (req, res) => {
+  try {
+    const hostname = req.hostname || 'localhost';
+    const tenantId = req.tenantId;
+    
+    // Try to get cached data first
+    const cachedData = await redisService.getHomeData(tenantId, hostname);
+    if (cachedData) {
+      console.log(`Cache HIT for home data: tenant=${tenantId}, hostname=${hostname}`);
+      return res.json(cachedData);
+    }
+    
+    console.log(`Cache MISS for home data: tenant=${tenantId}, hostname=${hostname}`);
+    
+    // For main domain (no tenant), return marketing page data
+    if (!tenantId) {
+      const mainDomainData = {
+        tenant: {
+          name: 'fore',
+          subdomain: null,
+          domainInfo: {
+            hostname: hostname,
+            isMainDomain: true,
+            isSubdomain: false,
+            isCustomDomain: false
+          },
+          settings: {
+            logo: null,
+            favicon: null,
+            primaryColor: null,
+            secondaryColor: null,
+            theme: 'light',
+            customCSS: null,
+            allowPublicVoting: false,
+            contactEmail: null,
+            supportUrl: null,
+            timezone: 'UTC'
+          }
+        },
+        roadmaps: [],
+        items: [],
+        firstRoadmapSlug: null
+      };
+      
+      // Cache main domain data for 5 minutes
+      await redisService.setHomeData(tenantId, hostname, mainDomainData, 300);
+      return res.json(mainDomainData);
+    }
+    
+    // Get tenant info
+    const tenant = req.tenant;
+    
+    const isMainDomain = hostname === 'forehq.com' || hostname === 'www.forehq.com' || hostname.includes('localhost') || hostname.includes('127.0.0.1');
+    const isSubdomain = hostname.endsWith('.forehq.com') && !isMainDomain;
+    const isCustomDomain = !isMainDomain && !isSubdomain;
+    
+    // Get all public roadmaps for this tenant
+    const roadmaps = await Roadmap.find({ isPublic: true, tenant: tenantId })
+      .populate('owner', 'email')
+      .sort({ createdAt: -1 });
+    
+    // Get all items for these roadmaps in one query (much more efficient)
+    const roadmapIds = roadmaps.map(r => r._id);
+    const items = await Item.find({ 
+      roadmap: { $in: roadmapIds },
+      tenant: tenantId 
+    })
+    .populate('roadmap', 'title slug')
+    .sort({ order: 1, createdAt: 1 });
+    
+    // Add roadmap info to items
+    const itemsWithRoadmapInfo = items.map(item => ({
+      ...item.toJSON(),
+      roadmapTitle: item.roadmap.title,
+      roadmapSlug: item.roadmap.slug
+    }));
+    
+    const responseData = {
+      tenant: {
+        name: tenant.name,
+        subdomain: tenant.subdomain,
+        domainInfo: {
+          hostname: hostname,
+          isMainDomain: isMainDomain,
+          isSubdomain: isSubdomain,
+          isCustomDomain: isCustomDomain
+        },
+        settings: {
+          logo: tenant.settings.logo,
+          favicon: tenant.settings.favicon,
+          primaryColor: tenant.settings.primaryColor,
+          secondaryColor: tenant.settings.secondaryColor,
+          theme: tenant.settings.theme,
+          customCSS: tenant.settings.customCSS,
+          allowPublicVoting: tenant.settings.allowPublicVoting,
+          contactEmail: tenant.settings.contactEmail,
+          supportUrl: tenant.settings.supportUrl,
+          timezone: tenant.settings.timezone
+        }
+      },
+      roadmaps: roadmaps,
+      items: itemsWithRoadmapInfo,
+      firstRoadmapSlug: roadmaps.length > 0 ? roadmaps[0].slug : null
+    };
+    
+    // Cache the response data for 5 minutes
+    await redisService.setHomeData(tenantId, hostname, responseData, 300);
+    
+    res.json(responseData);
+    
+  } catch (error) {
+    console.error('Get home page data error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get home page data'
+    });
+  }
+};
+
 module.exports = {
   createRoadmap,
   getRoadmaps,
   getRoadmapBySlug,
   updateRoadmap,
   deleteRoadmap,
-  getPublicRoadmaps
+  getPublicRoadmaps,
+  getHomePageData
 };

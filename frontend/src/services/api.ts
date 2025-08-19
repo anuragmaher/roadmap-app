@@ -2,6 +2,11 @@ import { api } from './auth';
 import { Roadmap, Item } from '../types';
 
 export const roadmapApi = {
+  getHomeData: async () => {
+    const response = await api.get('/roadmaps/home-data');
+    return response.data;
+  },
+
   getPublic: async (): Promise<Roadmap[]> => {
     const response = await api.get('/roadmaps/public');
     return response.data;
