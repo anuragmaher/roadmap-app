@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { roadmapApi, itemApi, tenantApi } from '../services/api';
+import { roadmapApi } from '../services/api';
 import { Item } from '../types';
 import Tag from '../components/Tag';
 import VoteButton from '../components/VoteButton';
@@ -168,26 +168,26 @@ const Home: React.FC = () => {
         <div className="hero">
           <div className="hero-content">
             <div className="hero-text">
-              <div className="skeleton skeleton-title" style={{width: '60%', height: '48px', marginBottom: '16px'}}></div>
-              <div className="skeleton skeleton-text" style={{width: '80%', height: '20px', marginBottom: '8px'}}></div>
-              <div className="skeleton skeleton-text" style={{width: '70%', height: '20px', marginBottom: '24px'}}></div>
-              <div className="skeleton skeleton-button" style={{width: '150px', height: '40px'}}></div>
+              <div className="skeleton skeleton-title" style={{width: '60%', height: '48px', marginBottom: '16px'}} />
+              <div className="skeleton skeleton-text" style={{width: '80%', height: '20px', marginBottom: '8px'}} />
+              <div className="skeleton skeleton-text" style={{width: '70%', height: '20px', marginBottom: '24px'}} />
+              <div className="skeleton skeleton-button" style={{width: '150px', height: '40px'}} />
             </div>
             <div className="hero-image">
-              <div className="skeleton skeleton-image" style={{width: '400px', height: '300px', borderRadius: '8px'}}></div>
+              <div className="skeleton skeleton-image" style={{width: '400px', height: '300px', borderRadius: '8px'}} />
             </div>
           </div>
         </div>
         <section className="initiatives-container">
           <div className="ai-initiatives">
-            <div className="skeleton skeleton-title" style={{width: '40%', height: '32px', marginBottom: '32px'}}></div>
+            <div className="skeleton skeleton-title" style={{width: '40%', height: '32px', marginBottom: '32px'}} />
             <div className="items-half-row-grid">
               {[1, 2, 3, 4, 5, 6].map((i) => (
                 <div key={i} className="roadmap-item-card skeleton-card">
-                  <div className="skeleton skeleton-text" style={{width: '70%', height: '24px', marginBottom: '12px'}}></div>
-                  <div className="skeleton skeleton-text" style={{width: '100%', height: '16px', marginBottom: '8px'}}></div>
-                  <div className="skeleton skeleton-text" style={{width: '80%', height: '16px', marginBottom: '16px'}}></div>
-                  <div className="skeleton skeleton-badge" style={{width: '80px', height: '24px'}}></div>
+                  <div className="skeleton skeleton-text" style={{width: '70%', height: '24px', marginBottom: '12px'}} />
+                  <div className="skeleton skeleton-text" style={{width: '100%', height: '16px', marginBottom: '8px'}} />
+                  <div className="skeleton skeleton-text" style={{width: '80%', height: '16px', marginBottom: '16px'}} />
+                  <div className="skeleton skeleton-badge" style={{width: '80px', height: '24px'}} />
                 </div>
               ))}
             </div>
