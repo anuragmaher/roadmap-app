@@ -1,17 +1,31 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
-import { getTenantInfo, getProductName } from '../utils/tenantUtils';
+import { getTenantInfo, getTenantInfoAsync, getProductName } from '../utils/tenantUtils';
 
 const Navbar: React.FC = () => {
   const { user, logout } = useAuth();
   const { isDark, toggleTheme, themeSource, setSystemTheme } = useTheme();
   const navigate = useNavigate();
+  const [tenantInfo, setTenantInfo] = useState(() => getTenantInfo()); // Initial sync value
   
   // Get tenant info for dynamic branding
-  const tenantInfo = getTenantInfo();
   const productName = getProductName(tenantInfo);
+  
+  // Update tenant info from API
+  useEffect(() => {
+    const updateTenantInfo = async () => {
+      try {
+        const updatedTenantInfo = await getTenantInfoAsync();
+        setTenantInfo(updatedTenantInfo);
+      } catch (error) {
+        console.error('Failed to update tenant info in Navbar:', error);
+      }
+    };
+    
+    updateTenantInfo();
+  }, []);
 
   const handleLogout = () => {
     logout();

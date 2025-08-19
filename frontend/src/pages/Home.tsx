@@ -4,17 +4,17 @@ import { roadmapApi, itemApi, tenantApi } from '../services/api';
 import { Item } from '../types';
 import Tag from '../components/Tag';
 import VoteButton from '../components/VoteButton';
-import { getTenantInfo, getProductName, getProductDescription, getHeroTitle } from '../utils/tenantUtils';
+import { getTenantInfo, getTenantInfoAsync, getProductName, getProductDescription, getHeroTitle } from '../utils/tenantUtils';
 
 const Home: React.FC = () => {
   const [allItems, setAllItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [firstRoadmapSlug, setFirstRoadmapSlug] = useState<string | null>(null);
-  const [tenantSettings, setTenantSettings] = useState<any>(null);
+  const [, setTenantSettings] = useState<any>(null);
+  const [tenantInfo, setTenantInfo] = useState(() => getTenantInfo()); // Initial sync value
   
-  // Get tenant information
-  const tenantInfo = getTenantInfo();
+  // Get tenant information (will be updated by async call)
   const productName = getProductName(tenantInfo);
   const productDescription = getProductDescription(tenantInfo);
   const heroTitle = getHeroTitle(tenantInfo);
@@ -22,8 +22,12 @@ const Home: React.FC = () => {
   useEffect(() => {
     const fetchPublicRoadmapsAndItems = async () => {
       try {
-        // Only fetch roadmap data if we're on a subdomain (tenant)
-        if (tenantInfo.isSubdomain) {
+        // First, get the accurate tenant info from the API
+        const updatedTenantInfo = await getTenantInfoAsync();
+        setTenantInfo(updatedTenantInfo);
+        
+        // Only fetch roadmap data if we're on a subdomain or custom domain (tenant)
+        if (updatedTenantInfo.isSubdomain || updatedTenantInfo.isCustomDomain) {
           try {
             const tenantData = await tenantApi.getInfo();
             setTenantSettings(tenantData);
@@ -32,8 +36,8 @@ const Home: React.FC = () => {
           }
         }
         
-        // Only fetch roadmaps for subdomains, not for main domain
-        if (!tenantInfo.isMainDomain) {
+        // Only fetch roadmaps for subdomains and custom domains, not for main domain
+        if (!updatedTenantInfo.isMainDomain) {
           const roadmapsData = await roadmapApi.getPublic();
         
           // Ensure data is an array
@@ -74,7 +78,7 @@ const Home: React.FC = () => {
     };
 
     fetchPublicRoadmapsAndItems();
-  }, [tenantInfo.isMainDomain, tenantInfo.isSubdomain]);
+  }, []);
 
   // Function to sort items by quarter chronologically
   const sortItemsByQuarter = (items: Item[]) => {

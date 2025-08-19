@@ -125,6 +125,12 @@ router.put('/settings', resolveTenant, auth, async (req, res) => {
 router.get('/info', resolveTenant, async (req, res) => {
   try {
     const tenant = req.tenant;
+    const hostname = req.hostname;
+    
+    // Determine if this is the main domain or a tenant-specific access
+    const isMainDomain = hostname === 'forehq.com' || hostname === 'www.forehq.com';
+    const isSubdomain = hostname.endsWith('.forehq.com') && !isMainDomain;
+    const isCustomDomain = !isMainDomain && !isSubdomain && !hostname.includes('localhost') && !hostname.includes('127.0.0.1');
     
     // Return only public information
     res.json({
@@ -132,6 +138,12 @@ router.get('/info', resolveTenant, async (req, res) => {
       data: {
         name: tenant.name,
         subdomain: tenant.subdomain,
+        domainInfo: {
+          hostname: hostname,
+          isMainDomain: isMainDomain,
+          isSubdomain: isSubdomain,
+          isCustomDomain: isCustomDomain
+        },
         settings: {
           logo: tenant.settings.logo,
           favicon: tenant.settings.favicon,
