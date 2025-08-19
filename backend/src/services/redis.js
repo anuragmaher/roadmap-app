@@ -97,7 +97,7 @@ class RedisService {
     }
   }
 
-  async set(key, value, ttlSeconds = 300) {
+  async set(key, value, ttlSeconds = 86400) {
     if (!this.isReady()) {
       console.warn('Redis not available, skipping cache set');
       return false;
@@ -155,7 +155,7 @@ class RedisService {
     return await this.get(key);
   }
 
-  async setHomeData(tenantId, hostname, data, ttlSeconds = 300) {
+  async setHomeData(tenantId, hostname, data, ttlSeconds = 86400) {
     const key = this.generateHomeDataKey(tenantId, hostname);
     return await this.set(key, data, ttlSeconds);
   }
