@@ -8,9 +8,16 @@ class RedisService {
 
   async connect() {
     try {
+      // Skip Redis connection if no URL provided (for serverless without Redis)
+      if (!process.env.REDIS_URL) {
+        console.log('No REDIS_URL provided - running without cache');
+        this.isConnected = false;
+        return false;
+      }
+
       // Create Redis client with environment-based configuration
       const redisConfig = {
-        url: process.env.REDIS_URL || 'redis://localhost:6379',
+        url: process.env.REDIS_URL,
         retry_strategy: (options) => {
           if (options.error && options.error.code === 'ECONNREFUSED') {
             console.log('Redis server connection refused');

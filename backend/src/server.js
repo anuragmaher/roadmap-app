@@ -21,7 +21,7 @@ mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('Connected to MongoDB'))
   .catch(err => console.error('MongoDB connection error:', err));
 
-// Initialize Redis connection
+// Initialize Redis connection (optional for production)
 redisService.connect()
   .then((connected) => {
     if (connected) {
@@ -32,7 +32,7 @@ redisService.connect()
   })
   .catch(err => {
     console.error('Redis initialization error:', err);
-    console.log('Continuing without Redis cache');
+    console.log('Continuing without Redis cache - app will work without caching');
   });
 
 // Add a root route for serverless debugging
