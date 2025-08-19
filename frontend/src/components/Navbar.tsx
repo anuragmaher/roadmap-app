@@ -2,11 +2,16 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
+import { getTenantInfo, getProductName } from '../utils/tenantUtils';
 
 const Navbar: React.FC = () => {
   const { user, logout } = useAuth();
   const { isDark, toggleTheme, themeSource, setSystemTheme } = useTheme();
   const navigate = useNavigate();
+  
+  // Get tenant info for dynamic branding
+  const tenantInfo = getTenantInfo();
+  const productName = getProductName(tenantInfo);
 
   const handleLogout = () => {
     logout();
@@ -17,7 +22,7 @@ const Navbar: React.FC = () => {
     <nav className="navbar">
       <div className="nav-container">
         <Link to="/" className="nav-logo">
-          Hiver AI
+          {productName}
         </Link>
         
         <div className="nav-menu">

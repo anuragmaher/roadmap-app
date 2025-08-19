@@ -91,8 +91,8 @@ const Dashboard: React.FC = () => {
                   onChange={(e) => setNewRoadmap({...newRoadmap, description: e.target.value})}
                 />
               </div>
-              <div className="form-group">
-                <label>
+              <div className="form-group checkbox-group">
+                <label className="checkbox-label">
                   <input
                     type="checkbox"
                     checked={newRoadmap.isPublic}

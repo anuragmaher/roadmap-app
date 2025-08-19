@@ -313,7 +313,7 @@ body {
                 id="customDomain"
                 value={tenant.settings.customDomain || ''}
                 onChange={(e) => updateSetting('settings.customDomain', e.target.value)}
-                placeholder="yourdomain.com"
+                placeholder="company.forehq.com"
               />
               <small>Enter your custom domain without http:// or www.</small>
             </div>
@@ -321,7 +321,7 @@ body {
             <div className="domain-info">
               <h4>Current Access URLs:</h4>
               <ul>
-                <li><strong>Subdomain:</strong> {tenant.subdomain}.yourdomain.com</li>
+                <li><strong>Subdomain:</strong> {tenant.subdomain}.forehq.com</li>
                 {tenant.settings.customDomain && (
                   <li><strong>Custom Domain:</strong> {tenant.settings.customDomain}</li>
                 )}

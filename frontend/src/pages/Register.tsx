@@ -115,7 +115,7 @@ const Register: React.FC = () => {
             {subdomainInfo && (
               <div className={`subdomain-preview ${subdomainInfo.isAvailable ? 'available' : 'unavailable'}`}>
                 <div className="subdomain-url">
-                  {subdomainInfo.subdomain}.yourdomain.com
+                  {subdomainInfo.subdomain}.forehq.com
                 </div>
                 <div className={`availability-status ${subdomainInfo.isAvailable ? 'available' : 'unavailable'}`}>
                   {subdomainInfo.isAvailable ? '✓ Available' : '✗ Not available'}
