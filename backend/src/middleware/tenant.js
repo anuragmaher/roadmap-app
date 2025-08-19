@@ -2,6 +2,22 @@ const { Tenant } = require('../models');
 
 const resolveTenant = async (req, res, next) => {
   try {
+    // Check for debug tenant header first
+    const debugTenant = req.get('X-Debug-Tenant');
+    if (debugTenant) {
+      const tenant = await Tenant.findOne({ 
+        subdomain: debugTenant.toLowerCase(),
+        status: 'active'
+      });
+      
+      if (tenant) {
+        req.tenant = tenant;
+        req.tenantId = tenant._id;
+        req.hostname = `${debugTenant}.forehq.com`; // Simulate subdomain
+        return next();
+      }
+    }
+    
     // Extract hostname and clean it
     const hostname = (req.get('host') || req.hostname).toLowerCase();
     
@@ -23,8 +39,8 @@ const resolveTenant = async (req, res, next) => {
       let subdomain;
       
       if (hostname.includes('localhost') || hostname.includes('127.0.0.1')) {
-        // For local development, use hiver as default
-        subdomain = 'hiver';
+        // For local development, don't resolve to any tenant (behave like main domain)
+        subdomain = null;
       } else if (hostname.includes('vercel.app') || hostname.includes('netlify.app')) {
         // For staging/preview deployments, use hiver as default
         subdomain = 'hiver';
@@ -42,14 +58,25 @@ const resolveTenant = async (req, res, next) => {
         }
       }
 
-      // Find tenant by subdomain
-      tenant = await Tenant.findOne({ 
-        subdomain: subdomain.toLowerCase(),
-        status: 'active'
-      });
+      // Find tenant by subdomain (if subdomain is not null)
+      if (subdomain) {
+        tenant = await Tenant.findOne({ 
+          subdomain: subdomain.toLowerCase(),
+          status: 'active'
+        });
+      }
     }
 
     if (!tenant) {
+      // For localhost, allow requests without a tenant (main domain behavior)
+      if (hostname.includes('localhost') || hostname.includes('127.0.0.1')) {
+        // Don't set tenant info, let the route handle it
+        req.tenant = null;
+        req.tenantId = null;
+        req.hostname = hostname;
+        return next();
+      }
+      
       return res.status(404).json({
         success: false,
         message: 'Tenant not found or inactive',

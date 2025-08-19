@@ -18,6 +18,19 @@ const api = axios.create({
   baseURL: API_BASE_URL
 });
 
+// Add interceptor to include debug_tenant parameter in requests
+api.interceptors.request.use((config) => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const debugTenant = urlParams.get('debug_tenant');
+  
+  if (debugTenant) {
+    // Add debug_tenant as a custom header
+    config.headers['X-Debug-Tenant'] = debugTenant;
+  }
+  
+  return config;
+});
+
 export const setAuthToken = (token: string | null) => {
   if (token) {
     api.defaults.headers.common['Authorization'] = `Bearer ${token}`;

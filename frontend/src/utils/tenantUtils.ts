@@ -28,12 +28,12 @@ export const getTenantInfo = (): TenantInfo => {
     };
   }
   
-  // For development/localhost, return default behavior
+  // For development/localhost, return main domain behavior
   if (hostname === 'localhost' || hostname === '127.0.0.1') {
     return {
-      isMainDomain: false, // Changed to false so it loads roadmap data for hiver
-      isSubdomain: true,   // Changed to true so it loads roadmap data for hiver
-      subdomain: 'hiver',  // Default to hiver for development
+      isMainDomain: true,
+      isSubdomain: false,
+      subdomain: null,
       hostname
     };
   }
@@ -109,6 +109,21 @@ export const getTenantInfo = (): TenantInfo => {
 
 // Async function to get tenant info from API
 export const getTenantInfoAsync = async (): Promise<TenantInfo> => {
+  // Check for debug parameter first - it should always override API
+  const urlParams = new URLSearchParams(window.location.search);
+  const debugTenant = urlParams.get('debug_tenant');
+  
+  if (debugTenant) {
+    const debugInfo = {
+      isMainDomain: false,
+      isSubdomain: true,
+      subdomain: debugTenant,
+      hostname: `${debugTenant}.forehq.com`
+    };
+    tenantInfoCache = debugInfo; // Cache debug result
+    return debugInfo;
+  }
+  
   // Return cached result if available
   if (tenantInfoCache) {
     return tenantInfoCache;

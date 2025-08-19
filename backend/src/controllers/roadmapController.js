@@ -157,6 +157,11 @@ const deleteRoadmap = async (req, res) => {
 
 const getPublicRoadmaps = async (req, res) => {
   try {
+    // For main domain (no tenant), return empty array - should show marketing page
+    if (!req.tenantId) {
+      return res.json([]);
+    }
+    
     const roadmaps = await Roadmap.find({ isPublic: true, tenant: req.tenantId })
       .populate('owner', 'email')
       .sort({ createdAt: -1 });

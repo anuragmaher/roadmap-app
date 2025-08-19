@@ -128,11 +128,40 @@ router.get('/info', resolveTenant, async (req, res) => {
     const hostname = req.hostname;
     
     // Determine if this is the main domain or a tenant-specific access
-    const isMainDomain = hostname === 'forehq.com' || hostname === 'www.forehq.com';
+    const isMainDomain = hostname === 'forehq.com' || hostname === 'www.forehq.com' || hostname.includes('localhost') || hostname.includes('127.0.0.1');
     const isSubdomain = hostname.endsWith('.forehq.com') && !isMainDomain;
-    const isCustomDomain = !isMainDomain && !isSubdomain && !hostname.includes('localhost') && !hostname.includes('127.0.0.1');
+    const isCustomDomain = !isMainDomain && !isSubdomain;
     
-    // Return only public information
+    // Handle localhost/main domain case (no tenant)
+    if (!tenant) {
+      return res.json({
+        success: true,
+        data: {
+          name: 'fore',
+          subdomain: null,
+          domainInfo: {
+            hostname: hostname,
+            isMainDomain: true,
+            isSubdomain: false,
+            isCustomDomain: false
+          },
+          settings: {
+            logo: null,
+            favicon: null,
+            primaryColor: null,
+            secondaryColor: null,
+            theme: 'light',
+            customCSS: null,
+            allowPublicVoting: false,
+            contactEmail: null,
+            supportUrl: null,
+            timezone: 'UTC'
+          }
+        }
+      });
+    }
+    
+    // Return tenant information
     res.json({
       success: true,
       data: {

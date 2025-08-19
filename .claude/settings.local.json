@@ -15,7 +15,9 @@
       "Bash(npm run typecheck:*)",
       "Bash(node:*)",
       "Bash(npm test)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(grep:*)",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []
