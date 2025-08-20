@@ -110,5 +110,26 @@ export const tenantApi = {
   checkDomainAvailability: async (domain: string, type: 'custom' | 'subdomain' = 'custom') => {
     const response = await api.post('/tenant/check-domain', { domain, type });
     return response.data;
+  },
+
+  // User management functions
+  getUsers: async () => {
+    const response = await api.get('/tenant/users');
+    return response;
+  },
+
+  inviteUser: async (email: string) => {
+    const response = await api.post('/tenant/invite-user', { email });
+    return response.data;
+  },
+
+  generateInviteLink: async () => {
+    const response = await api.post('/tenant/generate-invite-link');
+    return response;
+  },
+
+  removeUser: async (userId: string) => {
+    const response = await api.delete(`/tenant/users/${userId}`);
+    return response.data;
   }
 };

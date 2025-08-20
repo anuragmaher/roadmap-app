@@ -2,6 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { tenantApi } from '../services/api';
 
+interface TenantUser {
+  _id: string;
+  email: string;
+  name?: string;
+  role: string;
+  joinedAt: string;
+  lastActive?: string;
+  status: 'active' | 'invited' | 'suspended';
+}
+
 interface TenantSettings {
   name: string;
   subdomain: string;
@@ -32,10 +42,24 @@ const TenantSettings: React.FC = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [activeTab, setActiveTab] = useState('general');
+  
+  // Users management state
+  const [users, setUsers] = useState<TenantUser[]>([]);
+  const [usersLoading, setUsersLoading] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviting, setInviting] = useState(false);
+  const [inviteLink, setInviteLink] = useState('');
+  const [showInviteLink, setShowInviteLink] = useState(false);
 
   useEffect(() => {
     fetchTenantSettings();
   }, []);
+
+  useEffect(() => {
+    if (activeTab === 'users') {
+      fetchUsers();
+    }
+  }, [activeTab]);
 
   const fetchTenantSettings = async () => {
     try {
@@ -82,6 +106,68 @@ const TenantSettings: React.FC = () => {
     setTenant(updated);
   };
 
+  // User management functions
+  const fetchUsers = async () => {
+    setUsersLoading(true);
+    try {
+      const response = await tenantApi.getUsers();
+      setUsers(response.data);
+    } catch (err: any) {
+      setError(`Failed to load users: ${err.response?.data?.message || err.message}`);
+    } finally {
+      setUsersLoading(false);
+    }
+  };
+
+  const handleInviteUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inviteEmail.trim()) return;
+
+    setInviting(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      const response = await tenantApi.inviteUser(inviteEmail.trim());
+      setSuccess(`Invitation sent to ${inviteEmail}`);
+      setInviteEmail('');
+      fetchUsers(); // Refresh the users list
+    } catch (err: any) {
+      setError(`Failed to send invitation: ${err.response?.data?.message || err.message}`);
+    } finally {
+      setInviting(false);
+    }
+  };
+
+  const handleGenerateInviteLink = async () => {
+    setError('');
+    try {
+      const response = await tenantApi.generateInviteLink();
+      setInviteLink(response.data.inviteLink);
+      setShowInviteLink(true);
+      setSuccess('Invite link generated successfully');
+    } catch (err: any) {
+      setError(`Failed to generate invite link: ${err.response?.data?.message || err.message}`);
+    }
+  };
+
+  const handleRemoveUser = async (userId: string) => {
+    if (!confirm('Are you sure you want to remove this user?')) return;
+    
+    try {
+      await tenantApi.removeUser(userId);
+      setSuccess('User removed successfully');
+      fetchUsers(); // Refresh the users list
+    } catch (err: any) {
+      setError(`Failed to remove user: ${err.response?.data?.message || err.message}`);
+    }
+  };
+
+  const copyInviteLink = () => {
+    navigator.clipboard.writeText(inviteLink);
+    setSuccess('Invite link copied to clipboard');
+  };
+
   if (loading) return <div className="loading">Loading tenant settings...</div>;
   if (!tenant) return <div className="error">Failed to load tenant settings</div>;
 
@@ -119,6 +205,12 @@ const TenantSettings: React.FC = () => {
           onClick={() => setActiveTab('preferences')}
         >
           Preferences
+        </button>
+        <button 
+          className={`tab ${activeTab === 'users' ? 'active' : ''}`}
+          onClick={() => setActiveTab('users')}
+        >
+          Users
         </button>
       </div>
 
@@ -372,6 +464,117 @@ body {
               <h4>Plan Information</h4>
               <p><strong>Current Plan:</strong> {tenant.plan}</p>
               <p><strong>Status:</strong> {tenant.status}</p>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'users' && (
+          <div className="tab-content">
+            <h3>Team Members</h3>
+            <p>Manage users who have access to your roadmap and can edit content.</p>
+            
+            {/* Invite by Email */}
+            <div className="invite-section">
+              <h4>Invite by Email</h4>
+              <form onSubmit={handleInviteUser} className="invite-form">
+                <div className="form-row">
+                  <input
+                    type="email"
+                    value={inviteEmail}
+                    onChange={(e) => setInviteEmail(e.target.value)}
+                    placeholder="Enter email address"
+                    required
+                    disabled={inviting}
+                  />
+                  <button type="submit" className="btn btn-primary" disabled={inviting}>
+                    {inviting ? 'Sending...' : 'Send Invite'}
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            {/* Generate Invite Link */}
+            <div className="invite-section">
+              <h4>Invite Link</h4>
+              <p>Generate a link that anyone can use to join your team.</p>
+              <button 
+                type="button" 
+                className="btn btn-secondary" 
+                onClick={handleGenerateInviteLink}
+              >
+                Generate Invite Link
+              </button>
+              
+              {showInviteLink && inviteLink && (
+                <div className="invite-link-container">
+                  <div className="invite-link-display">
+                    <input 
+                      type="text" 
+                      value={inviteLink} 
+                      readOnly 
+                      className="invite-link-input"
+                    />
+                    <button 
+                      type="button" 
+                      className="btn btn-secondary" 
+                      onClick={copyInviteLink}
+                    >
+                      Copy
+                    </button>
+                  </div>
+                  <small>Share this link with team members to join your organization.</small>
+                </div>
+              )}
+            </div>
+
+            {/* Users List */}
+            <div className="users-section">
+              <h4>Current Team Members</h4>
+              {usersLoading ? (
+                <div className="loading">Loading users...</div>
+              ) : users.length === 0 ? (
+                <p>No team members yet. Invite someone to get started!</p>
+              ) : (
+                <div className="users-table">
+                  <div className="users-header">
+                    <div className="user-email">Email</div>
+                    <div className="user-role">Role</div>
+                    <div className="user-status">Status</div>
+                    <div className="user-joined">Joined</div>
+                    <div className="user-actions">Actions</div>
+                  </div>
+                  {users.map((userItem) => (
+                    <div key={userItem._id} className="user-row">
+                      <div className="user-email">
+                        {userItem.email}
+                        {userItem.name && <span className="user-name">({userItem.name})</span>}
+                      </div>
+                      <div className="user-role">
+                        <span className="role-badge">{userItem.role}</span>
+                      </div>
+                      <div className="user-status">
+                        <span className={`status-badge ${userItem.status}`}>
+                          {userItem.status}
+                        </span>
+                      </div>
+                      <div className="user-joined">
+                        {new Date(userItem.joinedAt).toLocaleDateString()}
+                      </div>
+                      <div className="user-actions">
+                        {userItem.email !== user?.email && (
+                          <button
+                            type="button"
+                            className="btn btn-danger btn-sm"
+                            onClick={() => handleRemoveUser(userItem._id)}
+                          >
+                            Remove
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         )}
