@@ -1,10 +1,31 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
+import { getTenantInfo, getTenantInfoAsync, TenantInfo } from '../utils/tenantUtils';
 
 const Footer: React.FC = () => {
   const { isDark } = useTheme();
+  const [tenantInfo, setTenantInfo] = useState<TenantInfo>(() => getTenantInfo());
   
   const currentYear = new Date().getFullYear();
+
+  // Update tenant info from API
+  useEffect(() => {
+    const updateTenantInfo = async () => {
+      try {
+        const updatedTenantInfo = await getTenantInfoAsync();
+        setTenantInfo(updatedTenantInfo);
+      } catch (error) {
+        console.error('Failed to update tenant info in Footer:', error);
+      }
+    };
+    
+    updateTenantInfo();
+  }, []);
+
+  // Only show footer on main domain (forehq.com)
+  if (!tenantInfo.isMainDomain) {
+    return null;
+  }
 
   return (
     <footer className="footer">
