@@ -11,6 +11,7 @@ const itemRoutes = require('./routes/items');
 const voteRoutes = require('./routes/votes');
 const subdomainRoutes = require('./routes/subdomain');
 const tenantRoutes = require('./routes/tenant');
+const invitationRoutes = require('./routes/invitations');
 
 const app = express();
 
@@ -50,6 +51,7 @@ app.use('/api/items', itemRoutes);
 app.use('/api/votes', voteRoutes);
 app.use('/api/subdomain', subdomainRoutes);
 app.use('/api/tenant', tenantRoutes);
+app.use('/api/invitations', invitationRoutes);
 
 // Setup for both local development and Vercel deployment
 const PORT = process.env.PORT || 5001;

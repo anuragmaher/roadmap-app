@@ -13,6 +13,11 @@ const userSchema = new mongoose.Schema({
     required: true,
     minlength: 6
   },
+  name: {
+    type: String,
+    trim: true,
+    default: null
+  },
   tenant: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Tenant',

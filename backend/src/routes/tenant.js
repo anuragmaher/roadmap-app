@@ -1,7 +1,8 @@
 const express = require('express');
 const auth = require('../middleware/auth');
 const { resolveTenant } = require('../middleware/tenant');
-const { Tenant } = require('../models');
+const { Tenant, User, Invitation } = require('../models');
+const crypto = require('crypto');
 
 const router = express.Router();
 
@@ -227,6 +228,236 @@ router.post('/check-domain', auth, async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to check domain availability'
+    });
+  }
+});
+
+// Get all users in tenant
+router.get('/users', resolveTenant, auth, async (req, res) => {
+  try {
+    const tenantId = req.tenantId;
+    
+    // Get all users for this tenant
+    const users = await User.find({ tenant: tenantId })
+      .select('email name role createdAt updatedAt')
+      .sort({ createdAt: 1 });
+    
+    // Get pending invitations
+    const invitations = await Invitation.find({ 
+      tenant: tenantId, 
+      status: 'pending',
+      expiresAt: { $gt: new Date() }
+    }).select('email role createdAt');
+    
+    // Combine users and invitations
+    const allUsers = [
+      ...users.map(user => ({
+        _id: user._id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        status: 'active',
+        joinedAt: user.createdAt,
+        lastActive: user.updatedAt
+      })),
+      ...invitations.map(invitation => ({
+        _id: invitation._id,
+        email: invitation.email,
+        name: null,
+        role: invitation.role,
+        status: 'invited',
+        joinedAt: invitation.createdAt,
+        lastActive: null
+      }))
+    ];
+    
+    res.json({
+      success: true,
+      data: allUsers
+    });
+    
+  } catch (error) {
+    console.error('Get tenant users error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get tenant users'
+    });
+  }
+});
+
+// Invite user by email
+router.post('/invite-user', resolveTenant, auth, async (req, res) => {
+  try {
+    const { email, role = 'member' } = req.body;
+    const tenantId = req.tenantId;
+    const userId = req.user.id;
+    
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email is required'
+      });
+    }
+    
+    // Check if user already exists in this tenant
+    const existingUser = await User.findOne({ email: email.toLowerCase(), tenant: tenantId });
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        message: 'User is already a member of this organization'
+      });
+    }
+    
+    // Check if there's already a pending invitation
+    const existingInvitation = await Invitation.findOne({ 
+      email: email.toLowerCase(), 
+      tenant: tenantId, 
+      status: 'pending',
+      expiresAt: { $gt: new Date() }
+    });
+    
+    if (existingInvitation) {
+      return res.status(400).json({
+        success: false,
+        message: 'An invitation has already been sent to this email'
+      });
+    }
+    
+    // Check tenant user limits
+    const tenant = await Tenant.findById(tenantId);
+    const currentUserCount = await User.countDocuments({ tenant: tenantId });
+    
+    if (currentUserCount >= tenant.limits.maxUsers) {
+      return res.status(400).json({
+        success: false,
+        message: `User limit reached. Your plan allows up to ${tenant.limits.maxUsers} users.`
+      });
+    }
+    
+    // Create invitation
+    const invitation = new Invitation({
+      email: email.toLowerCase(),
+      tenant: tenantId,
+      invitedBy: userId,
+      role: role
+    });
+    
+    await invitation.save();
+    
+    // TODO: Send email invitation here
+    // For now, we'll just return success
+    console.log(`Invitation sent to ${email} for tenant ${tenant.subdomain}`);
+    console.log(`Invitation URL: ${invitation.getInviteUrl()}`);
+    
+    res.json({
+      success: true,
+      message: 'Invitation sent successfully',
+      data: {
+        email: invitation.email,
+        inviteUrl: invitation.getInviteUrl(),
+        expiresAt: invitation.expiresAt
+      }
+    });
+    
+  } catch (error) {
+    console.error('Invite user error:', error);
+    
+    if (error.name === 'ValidationError') {
+      const messages = Object.values(error.errors).map(e => e.message);
+      return res.status(400).json({
+        success: false,
+        message: messages.join(', ')
+      });
+    }
+    
+    res.status(500).json({
+      success: false,
+      message: 'Failed to send invitation'
+    });
+  }
+});
+
+// Generate invite link
+router.post('/generate-invite-link', resolveTenant, auth, async (req, res) => {
+  try {
+    const tenant = req.tenant;
+    const { token, inviteLink } = Invitation.generateInviteLink(tenant);
+    
+    res.json({
+      success: true,
+      data: {
+        inviteLink: inviteLink,
+        token: token,
+        expiresIn: '7 days'
+      }
+    });
+    
+  } catch (error) {
+    console.error('Generate invite link error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to generate invite link'
+    });
+  }
+});
+
+// Remove user from tenant
+router.delete('/users/:userId', resolveTenant, auth, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const tenantId = req.tenantId;
+    const currentUserId = req.user.id;
+    
+    // Prevent users from removing themselves
+    if (userId === currentUserId) {
+      return res.status(400).json({
+        success: false,
+        message: 'You cannot remove yourself'
+      });
+    }
+    
+    // Check if it's a user or an invitation
+    let removed = false;
+    
+    // Try to find and remove user
+    const user = await User.findOneAndDelete({ 
+      _id: userId, 
+      tenant: tenantId 
+    });
+    
+    if (user) {
+      removed = true;
+      console.log(`User ${user.email} removed from tenant ${tenantId}`);
+    } else {
+      // Try to find and remove invitation
+      const invitation = await Invitation.findOneAndDelete({ 
+        _id: userId, 
+        tenant: tenantId 
+      });
+      
+      if (invitation) {
+        removed = true;
+        console.log(`Invitation for ${invitation.email} removed from tenant ${tenantId}`);
+      }
+    }
+    
+    if (!removed) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+    
+    res.json({
+      success: true,
+      message: 'User removed successfully'
+    });
+    
+  } catch (error) {
+    console.error('Remove user error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to remove user'
     });
   }
 });

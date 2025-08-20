@@ -124,7 +124,7 @@ const tenantSchema = new mongoose.Schema({
     },
     maxUsers: {
       type: Number,
-      default: 1
+      default: 5 // Allow 5 users by default for free plan
     }
   },
   billing: {
