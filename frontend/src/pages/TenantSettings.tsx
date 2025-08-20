@@ -123,20 +123,23 @@ const TenantSettings: React.FC = () => {
     }
   };
 
-  const handleInviteUser = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleInviteUser = async (e?: React.FormEvent | React.MouseEvent) => {
+    if (e) e.preventDefault();
     if (!inviteEmail.trim()) return;
 
+    console.log('Inviting user:', inviteEmail.trim()); // Debug log
     setInviting(true);
     setError('');
     setSuccess('');
 
     try {
-      await tenantApi.inviteUser(inviteEmail.trim());
+      const result = await tenantApi.inviteUser(inviteEmail.trim());
+      console.log('Invite result:', result); // Debug log
       setSuccess(`Invitation sent to ${inviteEmail}`);
       setInviteEmail('');
       fetchUsers(); // Refresh the users list
     } catch (err: any) {
+      console.error('Invite error:', err); // Debug log
       setError(`Failed to send invitation: ${err.response?.data?.message || err.message}`);
     } finally {
       setInviting(false);
@@ -480,7 +483,7 @@ body {
             {/* Invite by Email */}
             <div className="invite-section">
               <h4>Invite by Email</h4>
-              <form onSubmit={handleInviteUser} className="invite-form">
+              <div className="invite-form">
                 <div className="form-row">
                   <input
                     type="email"
@@ -489,12 +492,23 @@ body {
                     placeholder="Enter email address"
                     required
                     disabled={inviting}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleInviteUser(e as any);
+                      }
+                    }}
                   />
-                  <button type="submit" className="btn btn-primary" disabled={inviting}>
+                  <button 
+                    type="button" 
+                    className="btn btn-primary" 
+                    disabled={inviting || !inviteEmail.trim()}
+                    onClick={handleInviteUser}
+                  >
                     {inviting ? 'Sending...' : 'Send Invite'}
                   </button>
                 </div>
-              </form>
+              </div>
             </div>
 
             {/* Generate Invite Link */}
