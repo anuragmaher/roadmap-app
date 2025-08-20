@@ -38,8 +38,7 @@ export const getTenantInfo = (): TenantInfo => {
     };
   }
   
-  // Fallback for client-side rendering before API call completes
-  // This will be replaced by getTenantInfoAsync results
+  // Main forehq.com domain should always be treated as main domain
   if (hostname === 'forehq.com' || hostname === 'www.forehq.com') {
     return {
       isMainDomain: true,

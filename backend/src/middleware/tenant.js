@@ -53,8 +53,13 @@ const resolveTenant = async (req, res, next) => {
         if (parts.length >= 3) {
           subdomain = parts[0];
         } else {
-          // If no subdomain, use environment variable or default to hiver
-          subdomain = process.env.DEFAULT_TENANT || 'hiver';
+          // If no subdomain and it's the main forehq.com domain, don't assign a tenant
+          if (hostname === 'forehq.com' || hostname === 'www.forehq.com') {
+            subdomain = null;
+          } else {
+            // For other domains without subdomain, use environment variable or default to hiver
+            subdomain = process.env.DEFAULT_TENANT || 'hiver';
+          }
         }
       }
 
@@ -68,8 +73,11 @@ const resolveTenant = async (req, res, next) => {
     }
 
     if (!tenant) {
-      // For localhost, allow requests without a tenant (main domain behavior)
-      if (hostname.includes('localhost') || hostname.includes('127.0.0.1')) {
+      // For localhost and main forehq.com domain, allow requests without a tenant (main domain behavior)
+      if (hostname.includes('localhost') || 
+          hostname.includes('127.0.0.1') || 
+          hostname === 'forehq.com' || 
+          hostname === 'www.forehq.com') {
         // Don't set tenant info, let the route handle it
         req.tenant = null;
         req.tenantId = null;
