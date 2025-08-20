@@ -111,9 +111,13 @@ const TenantSettings: React.FC = () => {
     setUsersLoading(true);
     try {
       const response = await tenantApi.getUsers();
-      setUsers(response.data);
+      console.log('Users API response:', response); // Debug log
+      const usersData = response.data?.data || response.data || [];
+      setUsers(Array.isArray(usersData) ? usersData : []);
     } catch (err: any) {
+      console.error('Failed to load users:', err); // Debug log
       setError(`Failed to load users: ${err.response?.data?.message || err.message}`);
+      setUsers([]); // Set empty array on error
     } finally {
       setUsersLoading(false);
     }
@@ -543,7 +547,7 @@ body {
                     <div className="user-joined">Joined</div>
                     <div className="user-actions">Actions</div>
                   </div>
-                  {users.map((userItem) => (
+                  {Array.isArray(users) && users.map((userItem) => (
                     <div key={userItem._id} className="user-row">
                       <div className="user-email">
                         {userItem.email}
