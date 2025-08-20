@@ -27,7 +27,10 @@ const invitationSchema = new mongoose.Schema({
   token: {
     type: String,
     required: true,
-    unique: true
+    unique: true,
+    default: function() {
+      return crypto.randomBytes(32).toString('hex');
+    }
   },
   role: {
     type: String,
@@ -55,16 +58,13 @@ const invitationSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Generate unique token before saving
-invitationSchema.pre('save', function(next) {
-  if (this.isNew) {
-    this.token = crypto.randomBytes(32).toString('hex');
-  }
-  next();
-});
+// Token is now generated via default function
 
 // Compound index to ensure one pending invitation per email per tenant
-invitationSchema.index({ email: 1, tenant: 1, status: 1 }, { unique: true });
+invitationSchema.index({ email: 1, tenant: 1, status: 1 }, { 
+  unique: true,
+  partialFilterExpression: { status: 'pending' }
+});
 invitationSchema.index({ token: 1 });
 invitationSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 

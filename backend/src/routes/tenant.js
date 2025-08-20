@@ -335,6 +335,7 @@ router.post('/invite-user', resolveTenant, auth, async (req, res) => {
     }
     
     // Create invitation
+    console.log('Creating invitation for:', { email: email.toLowerCase(), tenantId, userId, role });
     const invitation = new Invitation({
       email: email.toLowerCase(),
       tenant: tenantId,
@@ -342,7 +343,9 @@ router.post('/invite-user', resolveTenant, auth, async (req, res) => {
       role: role
     });
     
+    console.log('Invitation before save:', invitation);
     await invitation.save();
+    console.log('Invitation after save:', invitation);
     
     // TODO: Send email invitation here
     // For now, we'll just return success
