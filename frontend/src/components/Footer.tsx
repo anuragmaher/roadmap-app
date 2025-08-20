@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useTheme } from '../contexts/ThemeContext';
 import { getTenantInfo, getTenantInfoAsync, TenantInfo } from '../utils/tenantUtils';
 
 const Footer: React.FC = () => {
-  const { isDark } = useTheme();
   const [tenantInfo, setTenantInfo] = useState<TenantInfo>(() => getTenantInfo());
   
   const currentYear = new Date().getFullYear();

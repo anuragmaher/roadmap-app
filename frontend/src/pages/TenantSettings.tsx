@@ -12,7 +12,7 @@ interface TenantUser {
   status: 'active' | 'invited' | 'suspended';
 }
 
-interface TenantSettings {
+interface TenantSettingsData {
   name: string;
   subdomain: string;
   settings: {
@@ -36,7 +36,7 @@ interface TenantSettings {
 
 const TenantSettings: React.FC = () => {
   const { user } = useAuth();
-  const [tenant, setTenant] = useState<TenantSettings | null>(null);
+  const [tenant, setTenant] = useState<TenantSettingsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -128,7 +128,7 @@ const TenantSettings: React.FC = () => {
     setSuccess('');
 
     try {
-      const response = await tenantApi.inviteUser(inviteEmail.trim());
+      await tenantApi.inviteUser(inviteEmail.trim());
       setSuccess(`Invitation sent to ${inviteEmail}`);
       setInviteEmail('');
       fetchUsers(); // Refresh the users list
