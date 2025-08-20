@@ -152,7 +152,7 @@ const TenantSettings: React.FC = () => {
   };
 
   const handleRemoveUser = async (userId: string) => {
-    if (!confirm('Are you sure you want to remove this user?')) return;
+    if (!window.confirm('Are you sure you want to remove this user?')) return;
     
     try {
       await tenantApi.removeUser(userId);
