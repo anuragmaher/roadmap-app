@@ -2,6 +2,11 @@ const { Tenant } = require('../models');
 
 const resolveTenant = async (req, res, next) => {
   try {
+    console.log(`🔍 Tenant Resolution Debug:`);
+    console.log(`  - Host header: ${req.get('host')}`);
+    console.log(`  - Hostname: ${req.hostname}`);
+    console.log(`  - Original URL: ${req.originalUrl}`);
+    
     // Check for debug tenant header first
     const debugTenant = req.get('X-Debug-Tenant');
     if (debugTenant) {
@@ -39,8 +44,8 @@ const resolveTenant = async (req, res, next) => {
       let subdomain;
       
       if (hostname.includes('localhost') || hostname.includes('127.0.0.1')) {
-        // For local development, don't resolve to any tenant (behave like main domain)
-        subdomain = null;
+        // For local development, use DEFAULT_TENANT environment variable
+        subdomain = process.env.DEFAULT_TENANT || null;
       } else if (hostname.includes('vercel.app') || hostname.includes('netlify.app')) {
         // For staging/preview deployments, use hiver as default
         subdomain = 'hiver';

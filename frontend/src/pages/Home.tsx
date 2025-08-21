@@ -4,7 +4,7 @@ import { roadmapApi } from '../services/api';
 import { Item } from '../types';
 import Tag from '../components/Tag';
 import VoteButton from '../components/VoteButton';
-import { getTenantInfo, getTenantInfoAsync, getProductName, getProductDescription, getHeroTitle } from '../utils/tenantUtils';
+import { getTenantInfo, getTenantInfoAsync, getProductName, getProductDescription, getHeroTitle, TenantInfo } from '../utils/tenantUtils';
 
 const Home: React.FC = () => {
   const [allItems, setAllItems] = useState<Item[]>([]);
@@ -12,7 +12,13 @@ const Home: React.FC = () => {
   const [error, setError] = useState('');
   const [firstRoadmapSlug, setFirstRoadmapSlug] = useState<string | null>(null);
   const [, setTenantSettings] = useState<any>(null);
-  const [tenantInfo, setTenantInfo] = useState(() => getTenantInfo()); // Initial sync value
+  const [tenantInfo, setTenantInfo] = useState<TenantInfo>(() => ({
+    isMainDomain: true,
+    isSubdomain: false,
+    isCustomDomain: false,
+    subdomain: null,
+    hostname: window.location.hostname
+  })); // Will be updated by API response
   
   // Get tenant information (will be updated by async call)
   const productName = getProductName(tenantInfo);

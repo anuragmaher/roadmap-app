@@ -236,7 +236,8 @@ const getHomePageData = async (req, res) => {
     // Get tenant info
     const tenant = req.tenant;
     
-    const isMainDomain = hostname === 'forehq.com' || hostname === 'www.forehq.com' || hostname.includes('localhost') || hostname.includes('127.0.0.1');
+    // If we have a tenant, this is not the main domain (regardless of hostname)
+    const isMainDomain = !tenantId && (hostname === 'forehq.com' || hostname === 'www.forehq.com' || hostname.includes('localhost') || hostname.includes('127.0.0.1'));
     const isSubdomain = hostname.endsWith('.forehq.com') && !isMainDomain;
     const isCustomDomain = !isMainDomain && !isSubdomain;
     
