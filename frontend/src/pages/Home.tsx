@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { roadmapApi } from '../services/api';
 import { Item } from '../types';
@@ -22,7 +22,7 @@ const Home: React.FC = () => {
   useEffect(() => {
     const fetchHomeData = async () => {
       try {
-        // Use optimized endpoint that fetches all data in one call
+        // Use optimized endpoint that fetches all data in one call with caching
         const homeData = await roadmapApi.getHomeData();
         
         // Update tenant info from the response
@@ -41,7 +41,6 @@ const Home: React.FC = () => {
         // Set roadmap data
         setFirstRoadmapSlug(homeData.firstRoadmapSlug);
         setAllItems(homeData.items || []);
-        
       } catch (err: any) {
         console.error('API error:', err);
         setError(`Failed to load data: ${err.response?.data?.message || err.message || 'Unknown error'}`);
@@ -88,10 +87,18 @@ const Home: React.FC = () => {
     });
   };
 
-  // Organize items by status and sort each group by quarter
-  const completedItems = sortItemsByQuarter(allItems.filter(item => item.status === 'completed'));
-  const inProgressItems = sortItemsByQuarter(allItems.filter(item => item.status === 'in-progress'));
-  const plannedItems = sortItemsByQuarter(allItems.filter(item => item.status === 'planned'));
+  // Memoize expensive computations to prevent recalculation on every render
+  const { completedItems, inProgressItems, plannedItems } = useMemo(() => {
+    const completed = sortItemsByQuarter(allItems.filter(item => item.status === 'completed'));
+    const inProgress = sortItemsByQuarter(allItems.filter(item => item.status === 'in-progress'));
+    const planned = sortItemsByQuarter(allItems.filter(item => item.status === 'planned'));
+    
+    return {
+      completedItems: completed,
+      inProgressItems: inProgress,
+      plannedItems: planned
+    };
+  }, [allItems]);
 
   const renderItemsSection = (title: string, items: Item[], statusClass: string) => {
     if (items.length === 0) return null;

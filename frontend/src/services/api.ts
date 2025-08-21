@@ -12,6 +12,11 @@ export const roadmapApi = {
     return response.data;
   },
 
+  getPublicWithItems: async (): Promise<Roadmap[]> => {
+    const response = await api.get('/roadmaps/public/with-items');
+    return response.data;
+  },
+
   getUserRoadmaps: async (): Promise<Roadmap[]> => {
     const response = await api.get('/roadmaps');
     return response.data;

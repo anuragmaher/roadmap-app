@@ -303,6 +303,29 @@ const getHomePageData = async (req, res) => {
   }
 };
 
+const getPublicRoadmapsWithItems = async (req, res) => {
+  try {
+    const roadmaps = await Roadmap.find({ isPublic: true, tenant: req.tenantId })
+      .populate('owner', 'email')
+      .sort({ createdAt: -1 });
+
+    const roadmapsWithItems = await Promise.all(
+      roadmaps.map(async (roadmap) => {
+        const items = await Item.find({ roadmap: roadmap._id, tenant: req.tenantId }).sort({ order: 1, createdAt: 1 });
+        return {
+          ...roadmap.toJSON(),
+          items
+        };
+      })
+    );
+
+    res.json(roadmapsWithItems);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 module.exports = {
   createRoadmap,
   getRoadmaps,
@@ -310,5 +333,6 @@ module.exports = {
   updateRoadmap,
   deleteRoadmap,
   getPublicRoadmaps,
-  getHomePageData
+  getHomePageData,
+  getPublicRoadmapsWithItems
 };
