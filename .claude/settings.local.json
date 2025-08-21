@@ -22,7 +22,10 @@
       "Bash(git commit:*)",
       "Bash(git push:*)",
       "Bash(git ls-tree:*)",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(git add:*)",
+      "Bash(git rebase:*)",
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "ask": []
