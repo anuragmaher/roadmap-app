@@ -152,13 +152,22 @@ class RedisService {
 
   async getHomeData(tenantId, hostname) {
     const key = this.generateHomeDataKey(tenantId, hostname);
-    return await this.get(key);
+    const startTime = Date.now();
+    const result = await this.get(key);
+    const duration = Date.now() - startTime;
+    console.log(`Redis GET home_data: key=${key}, hit=${!!result}, time=${duration}ms`);
+    return result;
   }
 
   async setHomeData(tenantId, hostname, data, ttlSeconds = null) {
     const key = this.generateHomeDataKey(tenantId, hostname);
+    const startTime = Date.now();
+    
     if (ttlSeconds) {
-      return await this.set(key, data, ttlSeconds);
+      const result = await this.set(key, data, ttlSeconds);
+      const duration = Date.now() - startTime;
+      console.log(`Redis SET home_data: key=${key}, ttl=${ttlSeconds}s, success=${result}, time=${duration}ms`);
+      return result;
     } else {
       if (!this.isReady()) {
         console.warn('Redis not available, skipping cache set');
@@ -166,9 +175,12 @@ class RedisService {
       }
       try {
         await this.client.set(key, JSON.stringify(data));
+        const duration = Date.now() - startTime;
+        console.log(`Redis SET home_data: key=${key}, ttl=none, success=true, time=${duration}ms`);
         return true;
       } catch (error) {
-        console.error('Redis SET error:', error);
+        const duration = Date.now() - startTime;
+        console.error(`Redis SET error: key=${key}, time=${duration}ms, error:`, error);
         return false;
       }
     }

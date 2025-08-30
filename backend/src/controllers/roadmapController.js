@@ -185,18 +185,25 @@ const getPublicRoadmaps = async (req, res) => {
 
 // Optimized endpoint for home page - fetches all data in one call with Redis caching
 const getHomePageData = async (req, res) => {
+  const startTime = Date.now();
+  const requestId = Math.random().toString(36).substring(7);
+  
   try {
+    console.log(`[${requestId}] Starting getHomePageData request`);
     const hostname = req.hostname || 'localhost';
     const tenantId = req.tenantId;
     
     // Try to get cached data first
+    const cacheStartTime = Date.now();
     const cachedData = await redisService.getHomeData(tenantId, hostname);
+    const cacheTime = Date.now() - cacheStartTime;
+    
     if (cachedData) {
-      console.log(`Cache HIT for home data: tenant=${tenantId}, hostname=${hostname}`);
+      console.log(`[${requestId}] Cache HIT for home data: tenant=${tenantId}, hostname=${hostname}, cache_time=${cacheTime}ms, total_time=${Date.now() - startTime}ms`);
       return res.json(cachedData);
     }
     
-    console.log(`Cache MISS for home data: tenant=${tenantId}, hostname=${hostname}`);
+    console.log(`[${requestId}] Cache MISS for home data: tenant=${tenantId}, hostname=${hostname}, cache_time=${cacheTime}ms`);
     
     // For main domain (no tenant), return marketing page data
     if (!tenantId) {
@@ -242,18 +249,26 @@ const getHomePageData = async (req, res) => {
     const isCustomDomain = !isMainDomain && !isSubdomain;
     
     // Get all public roadmaps for this tenant
+    console.log(`[${requestId}] Starting roadmaps query for tenant: ${tenantId}`);
+    const roadmapsStartTime = Date.now();
     const roadmaps = await Roadmap.find({ isPublic: true, tenant: tenantId })
       .populate('owner', 'email')
       .sort({ createdAt: -1 });
+    const roadmapsTime = Date.now() - roadmapsStartTime;
+    console.log(`[${requestId}] Roadmaps query completed: found ${roadmaps.length} roadmaps, query_time=${roadmapsTime}ms`);
     
     // Get all items for these roadmaps in one query (much more efficient)
     const roadmapIds = roadmaps.map(r => r._id);
+    console.log(`[${requestId}] Starting items query for ${roadmapIds.length} roadmaps`);
+    const itemsStartTime = Date.now();
     const items = await Item.find({ 
       roadmap: { $in: roadmapIds },
       tenant: tenantId 
     })
     .populate('roadmap', 'title slug')
     .sort({ order: 1, createdAt: 1 });
+    const itemsTime = Date.now() - itemsStartTime;
+    console.log(`[${requestId}] Items query completed: found ${items.length} items, query_time=${itemsTime}ms`);
     
     // Add roadmap info to items
     const itemsWithRoadmapInfo = items.map(item => ({
@@ -291,12 +306,20 @@ const getHomePageData = async (req, res) => {
     };
     
     // Cache the response data forever
+    console.log(`[${requestId}] Starting cache set operation`);
+    const cacheSetStartTime = Date.now();
     await redisService.setHomeData(tenantId, hostname, responseData);
+    const cacheSetTime = Date.now() - cacheSetStartTime;
+    console.log(`[${requestId}] Cache set completed: cache_set_time=${cacheSetTime}ms`);
+    
+    const totalTime = Date.now() - startTime;
+    console.log(`[${requestId}] getHomePageData completed successfully: total_time=${totalTime}ms, roadmaps=${roadmaps.length}, items=${items.length}`);
     
     res.json(responseData);
     
   } catch (error) {
-    console.error('Get home page data error:', error);
+    const totalTime = Date.now() - startTime;
+    console.error(`[${requestId}] Get home page data error (total_time=${totalTime}ms):`, error);
     res.status(500).json({
       success: false,
       message: 'Failed to get home page data'
