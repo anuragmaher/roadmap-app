@@ -155,9 +155,23 @@ class RedisService {
     return await this.get(key);
   }
 
-  async setHomeData(tenantId, hostname, data, ttlSeconds = 86400) {
+  async setHomeData(tenantId, hostname, data, ttlSeconds = null) {
     const key = this.generateHomeDataKey(tenantId, hostname);
-    return await this.set(key, data, ttlSeconds);
+    if (ttlSeconds) {
+      return await this.set(key, data, ttlSeconds);
+    } else {
+      if (!this.isReady()) {
+        console.warn('Redis not available, skipping cache set');
+        return false;
+      }
+      try {
+        await this.client.set(key, JSON.stringify(data));
+        return true;
+      } catch (error) {
+        console.error('Redis SET error:', error);
+        return false;
+      }
+    }
   }
 
   async invalidateHomeData(tenantId) {

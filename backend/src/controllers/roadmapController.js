@@ -228,8 +228,8 @@ const getHomePageData = async (req, res) => {
         firstRoadmapSlug: null
       };
       
-      // Cache main domain data for 5 minutes
-      await redisService.setHomeData(tenantId, hostname, mainDomainData, 300);
+      // Cache main domain data forever
+      await redisService.setHomeData(tenantId, hostname, mainDomainData);
       return res.json(mainDomainData);
     }
     
@@ -290,8 +290,8 @@ const getHomePageData = async (req, res) => {
       firstRoadmapSlug: roadmaps.length > 0 ? roadmaps[0].slug : null
     };
     
-    // Cache the response data for 5 minutes
-    await redisService.setHomeData(tenantId, hostname, responseData, 300);
+    // Cache the response data forever
+    await redisService.setHomeData(tenantId, hostname, responseData);
     
     res.json(responseData);
     
