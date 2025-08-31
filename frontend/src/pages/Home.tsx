@@ -4,7 +4,7 @@ import { roadmapApi } from '../services/api';
 import { Item } from '../types';
 import Tag from '../components/Tag';
 import VoteButton from '../components/VoteButton';
-import { getTenantInfo, getTenantInfoAsync, getProductName, getProductDescription, getHeroTitle, TenantInfo } from '../utils/tenantUtils';
+import { getTenantInfoAsync, getProductName, getProductDescription, getHeroTitle, TenantInfo } from '../utils/tenantUtils';
 
 const Home: React.FC = () => {
   const [allItems, setAllItems] = useState<Item[]>([]);
