@@ -342,22 +342,39 @@
 
 .items-half-row-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-auto-rows: 1fr;
   gap: 1.5rem;
   max-width: 1200px;
   margin: 0 auto;
 }
 
+/* Better responsive grid for different screen sizes */
+@media (min-width: 768px) {
+  .items-half-row-grid {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .items-half-row-grid {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }
+}
+
 .roadmap-item-card {
   background: linear-gradient(145deg, var(--surface-color), var(--bg-color));
-  padding: 1.5rem;
-  padding-bottom: 3rem; /* Make room for vote button */
+  padding: 1.25rem;
+  padding-bottom: 2.75rem; /* Make room for vote button */
   border-radius: var(--border-radius-lg);
   border: 1px solid var(--border-color);
   box-shadow: var(--shadow);
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .roadmap-item-card:hover {
@@ -388,6 +405,7 @@
   line-height: 1.6;
   margin-bottom: 1rem;
   font-size: 0.95rem;
+  flex: 1;
 }
 
 .roadmap-item-card .item-meta {
