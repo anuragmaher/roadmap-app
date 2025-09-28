@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { roadmapApi } from '../services/api';
 import { Roadmap } from '../types';
-import { getAvailableQuarters, parseQuarterValue, itemBelongsToQuarter } from '../utils/quarters';
 import Tag from '../components/Tag';
 import VoteButton from '../components/VoteButton';
 
@@ -35,35 +34,10 @@ const PublicRoadmap: React.FC = () => {
   if (!roadmap) return <div className="error">Roadmap not found</div>;
 
   const items = roadmap.items || [];
-  const availableQuarters = getAvailableQuarters();
   
-  // Get all unique quarters from items (including legacy format)
-  const allQuartersInItems = Array.from(new Set(items.map(item => item.quarter)));
-  
-  // Create a combined list of quarters: available quarters + any legacy quarters
-  const allQuarters = [...availableQuarters];
-  allQuartersInItems.forEach(itemQuarter => {
-    // If it's a legacy quarter not already covered, add it
-    if (!availableQuarters.some(q => itemBelongsToQuarter(itemQuarter, q.value))) {
-      try {
-        const parsed = parseQuarterValue(itemQuarter);
-        allQuarters.push(parsed);
-      } catch {
-        // If we can't parse it, create a simple display
-        allQuarters.push({
-          year: new Date().getFullYear(),
-          quarter: 0,
-          label: itemQuarter,
-          value: itemQuarter
-        });
-      }
-    }
-  });
-  
-  const itemsByQuarter = allQuarters.reduce((acc, quarter) => {
-    acc[quarter.value] = items.filter(item => itemBelongsToQuarter(item.quarter, quarter.value));
-    return acc;
-  }, {} as Record<string, typeof items>);
+  // Separate items into Released (completed) and Coming Soon (all other statuses)
+  const releasedItems = items.filter(item => item.status === 'completed');
+  const comingSoonItems = items.filter(item => item.status !== 'completed');
 
   return (
     <div className="home">
@@ -77,99 +51,151 @@ const PublicRoadmap: React.FC = () => {
       </div>
 
 
-      <div className="quarter-navigation" style={{ marginTop: '4rem' }}>
-        <h2>View by Quarter</h2>
-        <div className="quarter-links">
-          {availableQuarters.map(quarter => (
-            <Link 
-              key={quarter.value}
-              to={`/roadmap/${slug}/${quarter.value.toLowerCase()}`} 
-              className="quarter-link"
-            >
-              {quarter.label}
+      {/* Released Section */}
+      <div className="status-section" style={{ marginTop: '4rem' }}>
+        <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+          <h2 style={{ fontSize: '2rem', fontWeight: '700', margin: 0, color: 'var(--text-color)' }}>Released</h2>
+          {releasedItems.length > 0 && (
+            <Link to={`/roadmap/${slug}/released`} className="view-quarter-btn">
+              View All Released Items
             </Link>
-          ))}
+          )}
         </div>
+        
+        {releasedItems.length === 0 ? (
+          <p className="no-items">No items have been released yet</p>
+        ) : (
+          <div className="items-half-row-grid">
+            {releasedItems.slice(0, 4).map((item) => (
+              <div key={item._id} className={`roadmap-item-card ${item.image ? 'has-image' : ''}`}>
+                {item.image && (
+                  <img 
+                    src={item.image} 
+                    alt={item.title}
+                    className="item-image"
+                  />
+                )}
+                <div className="item-header">
+                  <h4>{item.title}</h4>
+                  <span className={`status-badge ${item.status}`}>
+                    {item.status.replace('-', ' ')}
+                  </span>
+                </div>
+                <p className="item-description">{item.description}</p>
+                <div className="item-meta">
+                  <span className="quarter-info">{item.quarter}</span>
+                </div>
+                {item.tags && item.tags.length > 0 && (
+                  <div className="tags">
+                    {item.tags.map((tag, index) => (
+                      <Tag key={index} variant="default">
+                        {tag}
+                      </Tag>
+                    ))}
+                  </div>
+                )}
+                {(item.prdLink || item.figmaLink) && (
+                  <div className="item-links">
+                    {item.prdLink && (
+                      <a 
+                        href={item.prdLink} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="link-btn prd-link"
+                        title="View PRD"
+                      >
+                        📋 PRD
+                      </a>
+                    )}
+                    {item.figmaLink && (
+                      <a 
+                        href={item.figmaLink} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="link-btn figma-link"
+                        title="View Figma"
+                      >
+                        🎨 Figma
+                      </a>
+                    )}
+                  </div>
+                )}
+                <VoteButton itemId={item._id} itemStatus={item.status} />
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
-      <div className="quarters-overview">
-        {allQuarters.map(quarter => {
-          const quarterItems = itemsByQuarter[quarter.value] || [];
-          return (
-            <div key={quarter.value} className="status-section">
-              <div className="quarter-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-                <h3 style={{ fontSize: '1.75rem', fontWeight: '700', margin: 0, color: 'var(--text-color)' }}>{quarter.label}</h3>
-                <Link to={`/roadmap/${slug}/${quarter.value.toLowerCase()}`} className="view-quarter-btn">
-                  View {quarter.label} Details
-                </Link>
-              </div>
-              
-              {quarterItems.length === 0 ? (
-                <p className="no-items">No items planned for {quarter.label}</p>
-              ) : (
-                <div className="items-half-row-grid">
-                  {quarterItems.map((item) => (
-                    <div key={item._id} className={`roadmap-item-card ${item.image ? 'has-image' : ''}`}>
-                      {item.image && (
-                        <img 
-                          src={item.image} 
-                          alt={item.title}
-                          className="item-image"
-                        />
-                      )}
-                      <div className="item-header">
-                        <h4>{item.title}</h4>
-                        <span className={`status-badge ${item.status}`}>
-                          {item.status.replace('-', ' ')}
-                        </span>
-                      </div>
-                      <p className="item-description">{item.description}</p>
-                      <div className="item-meta">
-                        <span className="quarter-info">{item.quarter}</span>
-                      </div>
-                      {item.tags && item.tags.length > 0 && (
-                        <div className="tags">
-                          {item.tags.map((tag, index) => (
-                            <Tag key={index} variant="default">
-                              {tag}
-                            </Tag>
-                          ))}
-                        </div>
-                      )}
-                      {(item.prdLink || item.figmaLink) && (
-                        <div className="item-links">
-                          {item.prdLink && (
-                            <a 
-                              href={item.prdLink} 
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              className="link-btn prd-link"
-                              title="View PRD"
-                            >
-                              📋 PRD
-                            </a>
-                          )}
-                          {item.figmaLink && (
-                            <a 
-                              href={item.figmaLink} 
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              className="link-btn figma-link"
-                              title="View Figma"
-                            >
-                              🎨 Figma
-                            </a>
-                          )}
-                        </div>
-                      )}
-                      <VoteButton itemId={item._id} itemStatus={item.status} />
-                    </div>
-                  ))}
+      {/* Coming Soon Section */}
+      <div className="status-section" style={{ marginTop: '4rem' }}>
+        <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+          <h2 style={{ fontSize: '2rem', fontWeight: '700', margin: 0, color: 'var(--text-color)' }}>Coming Soon</h2>
+        </div>
+        
+        {comingSoonItems.length === 0 ? (
+          <p className="no-items">No upcoming items planned</p>
+        ) : (
+          <div className="items-half-row-grid">
+            {comingSoonItems.map((item) => (
+              <div key={item._id} className={`roadmap-item-card ${item.image ? 'has-image' : ''}`}>
+                {item.image && (
+                  <img 
+                    src={item.image} 
+                    alt={item.title}
+                    className="item-image"
+                  />
+                )}
+                <div className="item-header">
+                  <h4>{item.title}</h4>
+                  <span className={`status-badge ${item.status}`}>
+                    {item.status.replace('-', ' ')}
+                  </span>
                 </div>
-              )}
-            </div>
-          );
-        })}
+                <p className="item-description">{item.description}</p>
+                <div className="item-meta">
+                  <span className="quarter-info">{item.quarter}</span>
+                </div>
+                {item.tags && item.tags.length > 0 && (
+                  <div className="tags">
+                    {item.tags.map((tag, index) => (
+                      <Tag key={index} variant="default">
+                        {tag}
+                      </Tag>
+                    ))}
+                  </div>
+                )}
+                {(item.prdLink || item.figmaLink) && (
+                  <div className="item-links">
+                    {item.prdLink && (
+                      <a 
+                        href={item.prdLink} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="link-btn prd-link"
+                        title="View PRD"
+                      >
+                        📋 PRD
+                      </a>
+                    )}
+                    {item.figmaLink && (
+                      <a 
+                        href={item.figmaLink} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="link-btn figma-link"
+                        title="View Figma"
+                      >
+                        🎨 Figma
+                      </a>
+                    )}
+                  </div>
+                )}
+                <VoteButton itemId={item._id} itemStatus={item.status} />
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
