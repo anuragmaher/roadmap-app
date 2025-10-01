@@ -6,12 +6,13 @@ const { resolveTenant } = require('../middleware/tenant');
 
 const router = express.Router();
 
-router.post('/register', [
-  body('email').isEmail().normalizeEmail(),
-  body('password').isLength({ min: 6 }),
-  body('companyName').trim().isLength({ min: 1 }).withMessage('Company name is required'),
-  body('companySize').isIn(['0-10', '10-100', '100+']).withMessage('Company size must be 0-10, 10-100, or 100+')
-], register);
+// Registration disabled - users must join beta program
+router.post('/register', (req, res) => {
+  res.status(403).json({
+    message: 'Registration is currently closed. Please join our beta program to get early access.',
+    redirectTo: '/register'
+  });
+});
 
 router.post('/login', resolveTenant, [
   body('email').isEmail().normalizeEmail(),

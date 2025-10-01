@@ -73,7 +73,9 @@ const Navbar: React.FC = () => {
           ) : (
             <div className="nav-auth">
               <Link to="/login" className="nav-link">Login</Link>
-              <Link to="/register" className="nav-link">Register</Link>
+              {tenantInfo?.isMainDomain && (
+                <Link to="/register" className="nav-link">Join Beta</Link>
+              )}
             </div>
           )}
         </div>

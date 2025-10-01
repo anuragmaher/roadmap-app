@@ -219,8 +219,8 @@ const Home: React.FC = () => {
             <p>{productDescription}</p>
             {tenantInfo.isMainDomain ? (
               <div className="cta-buttons">
-                <Link to="/register" className="cta-btn primary">Get Started</Link>
-                <Link to="/login" className="cta-btn secondary">Sign In</Link>
+                <Link to="/register" className="cta-btn primary">Join Beta</Link>
+                <a href="https://fore.forehq.com" target="_blank" rel="noopener noreferrer" className="cta-btn secondary">View Fore Roadmap</a>
               </div>
             ) : (
               firstRoadmapSlug && (
